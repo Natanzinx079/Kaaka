@@ -1,167 +1,201 @@
 --[[
-  Natan Dead - Script Profissional para Dead Rails (Roblox)
-  Compatível com Delta Executor e Android
-  Desenvolvido com funções completas e interface moderna
+   Natan Dead - Hub Profissional para Dead Rails (Roblox)
+   Inspirado visualmente em KiciaHook, NatHub e Lunor
+   Compatível com Delta Executor e Android
+   Desenvolvido com foco em funcionalidades reais e sem bugs
 --]]
 
--- Proteção e Serviços
+-- Proteção inicial contra execução duplicada
+if getgenv().NatanDeadLoaded then return end
+getgenv().NatanDeadLoaded = true
+
+-- Serviços
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local Mouse = LocalPlayer:GetMouse()
-local CoreGui = game:GetService("CoreGui")
-local TweenService = game:GetService("TweenService")
+local Lighting = game:GetService("Lighting")
 local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
 
--- Anti-duplo
-pcall(function()
-    if CoreGui:FindFirstChild("NatanDead") then
-        CoreGui:FindFirstChild("NatanDead"):Destroy()
-    end
-end)
-
--- Interface
-local ScreenGui = Instance.new("ScreenGui", CoreGui)
-ScreenGui.Name = "NatanDead"
-ScreenGui.ResetOnSpawn = false
+-- GUI Principal
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+ScreenGui.Name = "NatanDeadHub"
 
 local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 500, 0, 350)
-MainFrame.Position = UDim2.new(0.5, -250, 0.5, -175)
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+MainFrame.Size = UDim2.new(0, 500, 0, 320)
+MainFrame.Position = UDim2.new(0.5, -250, 0.5, -160)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
 
 local UICorner = Instance.new("UICorner", MainFrame)
-UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.CornerRadius = UDim.new(0, 12)
 
 local Title = Instance.new("TextLabel", MainFrame)
-Title.Text = "Natan Dead"
 Title.Size = UDim2.new(1, 0, 0, 40)
-Title.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.Font = Enum.Font.GothamBold
-Title.TextScaled = true
+Title.BackgroundTransparency = 1
+Title.Text = "Natan Dead - Hub Profissional"
+Title.TextColor3 = Color3.fromRGB(255, 0, 0)
+Title.Font = Enum.Font.GothamBlack
+Title.TextSize = 18
 
-local CloseBtn = Instance.new("TextButton", MainFrame)
-CloseBtn.Text = "X"
-CloseBtn.Size = UDim2.new(0, 40, 0, 40)
-CloseBtn.Position = UDim2.new(1, -40, 0, 0)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
-CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextScaled = true
-CloseBtn.MouseButton1Click:Connect(function()
+-- Minimize e Fechar
+local CloseButton = Instance.new("TextButton", MainFrame)
+CloseButton.Text = "X"
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(1, -35, 0, 5)
+CloseButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextSize = 14
+CloseButton.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
-local MinBtn = Instance.new("TextButton", MainFrame)
-MinBtn.Text = "-"
-MinBtn.Size = UDim2.new(0, 40, 0, 40)
-MinBtn.Position = UDim2.new(1, -80, 0, 0)
-MinBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-MinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-MinBtn.Font = Enum.Font.GothamBold
-MinBtn.TextScaled = true
-local minimized = false
-MinBtn.MouseButton1Click:Connect(function()
-    minimized = not minimized
-    MainFrame.Size = minimized and UDim2.new(0, 500, 0, 50) or UDim2.new(0, 500, 0, 350)
+local MinimizeButton = Instance.new("TextButton", MainFrame)
+MinimizeButton.Text = "-"
+MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
+MinimizeButton.Position = UDim2.new(1, -70, 0, 5)
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeButton.TextSize = 14
+
+local isMinimized = false
+MinimizeButton.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    for _, v in pairs(MainFrame:GetChildren()) do
+        if v:IsA("TextButton") or v:IsA("TextLabel") then
+            if v ~= Title and v ~= MinimizeButton and v ~= CloseButton then
+                v.Visible = not isMinimized
+            end
+        end
+    end
 end)
 
--- Botões
-local function createButton(name, yPos, callback)
-    local btn = Instance.new("TextButton", MainFrame)
-    btn.Text = name
-    btn.Size = UDim2.new(1, -20, 0, 40)
-    btn.Position = UDim2.new(0, 10, 0, yPos)
-    btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.Font = Enum.Font.Gotham
-    btn.TextScaled = true
-    btn.MouseButton1Click:Connect(callback)
+-- Funções úteis
+local function teleportTo(position)
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(position)
+    end
 end
 
--- Funções
-createButton("TP: Trem", 50, function()
-    LocalPlayer.Character:PivotTo(workspace.Train.PrimaryPart.CFrame * CFrame.new(0, 5, 0))
-end)
+local function fullBright()
+    Lighting.Brightness = 5
+    Lighting.FogEnd = 100000
+    Lighting.GlobalShadows = false
+    Lighting.ClockTime = 12
+end
 
-createButton("TP: Base 1", 100, function()
-    LocalPlayer.Character:PivotTo(CFrame.new(235, 90, -1965))
-end)
+local function removeFog()
+    Lighting.FogEnd = 100000
+end
 
-createButton("TP: Base 2", 150, function()
-    LocalPlayer.Character:PivotTo(CFrame.new(-2305, 90, -1812))
-end)
+local function unlockMouse()
+    local userInputService = game:GetService("UserInputService")
+    userInputService.MouseBehavior = Enum.MouseBehavior.Default
+end
 
-createButton("TP: Base 3", 200, function()
-    LocalPlayer.Character:PivotTo(CFrame.new(-430, 90, 1900))
-end)
+local function unlockCamera()
+    LocalPlayer.CameraMaxZoomDistance = 500
+end
 
-createButton("AutoFarm", 250, function()
-    if not _G.farming then
-        _G.farming = true
-        while _G.farming and task.wait(0.2) do
-            pcall(function()
-                LocalPlayer.Character:PivotTo(workspace.Train.PrimaryPart.CFrame * CFrame.new(0, 5, 0))
-                fireproximityprompt(workspace.Train:FindFirstChildOfClass("ProximityPrompt"), 1)
-            end)
-        end
-    else
-        _G.farming = false
-    end
-end)
-
-createButton("ESP Trem", 300, function()
-    for _,v in pairs(workspace:GetChildren()) do
-        if v:IsA("Model") and v:FindFirstChild("Humanoid") and not v:FindFirstChild("ESP") then
-            local bill = Instance.new("BillboardGui", v)
-            bill.Name = "ESP"
-            bill.Size = UDim2.new(0, 100, 0, 40)
-            bill.AlwaysOnTop = true
-            bill.Adornee = v:FindFirstChild("Head")
-            local txt = Instance.new("TextLabel", bill)
-            txt.Size = UDim2.new(1, 0, 1, 0)
-            txt.Text = v.Name
-            txt.TextColor3 = Color3.new(1, 0, 0)
-            txt.BackgroundTransparency = 1
-        end
-    end
-end)
-
-createButton("Noclip (Toggle N)", 350, function()
+local function toggleNoclip()
     local noclip = false
-    Mouse.KeyDown:Connect(function(key)
-        if key == "n" then
-            noclip = not noclip
-        end
-    end)
     RunService.Stepped:Connect(function()
         if noclip and LocalPlayer.Character then
-            for _,v in pairs(LocalPlayer.Character:GetDescendants()) do
-                if v:IsA("BasePart") and v.CanCollide == true then
+            for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
+                if v:IsA("BasePart") and v.CanCollide then
                     v.CanCollide = false
                 end
             end
         end
     end)
+    return function(state)
+        noclip = state
+    end
+end
+
+local setNoclip = toggleNoclip()
+
+-- Base Locations (em cima das torretas)
+local Bases = {
+    ["Trem"] = Vector3.new(100, 20, 300),
+    ["Base 1"] = Vector3.new(342, 110, -721),
+    ["Base 2"] = Vector3.new(914, 128, -148),
+    ["Base 3"] = Vector3.new(1274, 122, -835),
+    ["Base Final"] = Vector3.new(2223, 138, -552)
+}
+
+-- AutoFarm simples
+local autoFarm = false
+spawn(function()
+    while task.wait(0.5) do
+        if autoFarm then
+            teleportTo(Bases["Trem"])
+        end
+    end
 end)
 
--- Extras
-createButton("Full Bright", 400, function()
-    game:GetService("Lighting").Brightness = 3
-    game:GetService("Lighting").TimeOfDay = "14:00:00"
+-- Criar Botões
+local Y = 50
+local function createButton(text, callback)
+    local button = Instance.new("TextButton", MainFrame)
+    button.Size = UDim2.new(0, 480, 0, 30)
+    button.Position = UDim2.new(0, 10, 0, Y)
+    button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    button.Text = text
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 14
+    button.MouseButton1Click:Connect(callback)
+    Y = Y + 35
+end
+
+-- Botões principais
+createButton("Teleportar para o Trem", function()
+    teleportTo(Bases["Trem"])
 end)
 
-createButton("Remove Fog", 450, function()
-    game:GetService("Lighting").FogEnd = 1e10
+for base, pos in pairs(Bases) do
+    if base ~= "Trem" then
+        createButton("Teleporte para " .. base, function()
+            teleportTo(pos)
+        end)
+    end
+end
+
+createButton("Ativar AutoFarm", function()
+    autoFarm = not autoFarm
 end)
 
-createButton("Unlock Mouse", 500, function()
-    game:GetService("UserInputService”).MouseBehavior = Enum.MouseBehavior.Default
+createButton("Toggle Noclip", function()
+    setNoclip(true)
 end)
 
-createButton("Unlock Camera", 550, function()
-    LocalPlayer.CameraMaxZoomDistance = 1000
-end)
+createButton("Unlock Mouse", unlockMouse)
+createButton("Unlock Camera", unlockCamera)
+createButton("Full Bright", fullBright)
+createButton("Remove Fog", removeFog)
+
+-- ESP básico (apenas nome no topo de players)
+local function createESP()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and not player.Character:FindFirstChild("ESP") then
+            local bill = Instance.new("BillboardGui", player.Character)
+            bill.Name = "ESP"
+            bill.Adornee = player.Character:WaitForChild("Head")
+            bill.Size = UDim2.new(0, 100, 0, 40)
+            bill.StudsOffset = Vector3.new(0, 2, 0)
+            bill.AlwaysOnTop = true
+            local text = Instance.new("TextLabel", bill)
+            text.Size = UDim2.new(1, 0, 1, 0)
+            text.Text = player.Name
+            text.TextColor3 = Color3.fromRGB(255, 0, 0)
+            text.BackgroundTransparency = 1
+            text.TextScaled = true
+        end
+    end
+end
+
+createButton("Ativar ESP de Jogadores", createESP)
+
+-- Fim do Script
+print("[Natan Dead Hub] Script carregado com sucesso!")
