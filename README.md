@@ -59,11 +59,11 @@ UIPageLayout.Padding = UDim.new(0, 0)
 
 local Tabs = {"Main", "Character", "Teleport", "Visual", "Combat", "Configuration"}
 
-for index, name in pairs(Tabs) do
+for _, name in pairs(Tabs) do
     local Button = Instance.new("TextButton", SideMenu)
     Button.Text = name
     Button.Size = UDim2.new(1, -10, 0, 30)
-    Button.Position = UDim2.new(0, 5, 0, (index - 1) * 35)
+    Button.Position = UDim2.new(0, 5, 0, (_ - 1) * 35)
     Button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     Button.TextColor3 = Color3.fromRGB(255, 255, 255)
     Button.Font = Enum.Font.Gotham
