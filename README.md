@@ -1,132 +1,197 @@
-local TweenService = game:GetService("TweenService")
-local player = game.Players.LocalPlayer
-local userInterface = player.PlayerGui
+-- Dead Realm Auto Bond Script
+-- Versão 3.0 - Compatível com Delta e Android
+-- Baseado no Nathub com melhorias
 
--- Criação do ScreenGui
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "CustomGUI"
-screenGui.Parent = userInterface
+local Settings = {
+    AutoBond = {
+        Enabled = true,
+        Key = "e",
+        Distance = 25,
+        Cooldown = 2,
+        Priority = "Closest", -- Closest, LowestHealth, Random
+        CheckInterval = 0.2,
+        Notify = true
+    },
+    UI = {
+        Enabled = true,
+        Style = "Modern", -- Simple, Modern, Pro
+        Position = {x = 10, y = 10},
+        Theme = "Dark" -- Dark, Light, Blue
+    }
+}
 
--- Função de animação para mover e redimensionar a interface
-local function animateUI(frame, position, size, duration)
-    local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Quart, Enum.EasingDirection.InOut)
-    local tween = TweenService:Create(frame, tweenInfo, {Position = position, Size = size})
-    tween:Play()
-end
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local BondedPlayers = {}
+local LastBondTime = 0
+local UIShowing = true
 
--- Função para minimizar a interface
-local isMinimized = false
-local function minimizeUI()
-    if not isMinimized then
-        animateUI(mainFrame, UDim2.new(0.5, -50, 0.5, 50), UDim2.new(0, 100, 0, 50), 0.5)
-        minimizeButton.Text = "+"
-        isMinimized = true
-    else
-        animateUI(mainFrame, UDim2.new(0.5, -200, 0.5, -300), UDim2.new(0, 400, 0, 600), 0.5)
-        minimizeButton.Text = "-"
-        isMinimized = false
-    end
-end
-
--- Função para fechar a interface
-local function closeUI()
-    animateUI(mainFrame, UDim2.new(0.5, -200, 0.5, 200), UDim2.new(0, 0, 0, 0), 0.5)
-    wait(0.5)
-    screenGui:Destroy()  -- Fecha a interface completamente
-end
-
--- Função para mostrar bolinho ao minimizar
-local bolinho = Instance.new("ImageLabel")
-bolinho.Size = UDim2.new(0, 100, 0, 100)
-bolinho.Position = UDim2.new(0.5, -50, 0.5, -50)
-bolinho.Image = "rbxassetid://YOUR_IMAGE_ID"  -- Substitua com o ID da sua imagem
-bolinho.Parent = screenGui
-bolinho.Visible = false
-
-local function showBolinho()
-    bolinho.Visible = true
-    local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Bounce, Enum.EasingDirection.Out)
-    local tween = TweenService:Create(bolinho, tweenInfo, {Position = UDim2.new(0.5, -50, 0.5, -50), Size = UDim2.new(0, 100, 0, 100)})
-    tween:Play()
-    wait(0.3)
-    bolinho.Visible = false
-end
-
--- Criação do Frame principal com bordas arredondadas
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 400, 0, 600)
-mainFrame.Position = UDim2.new(0.5, -200, 0.5, -300)
-mainFrame.BackgroundColor3 = Color3.fromRGB(33, 33, 33)
-mainFrame.BorderSizePixel = 0
-mainFrame.Parent = screenGui
-mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-mainFrame.BackgroundTransparency = 0.1
-mainFrame.UIStroke.Color = Color3.fromRGB(255, 255, 255)
-mainFrame.UIStroke.Thickness = 2
-mainFrame.BorderRadius = UDim.new(0, 15)  -- Borda arredondada
-
--- Função para criar botões com animações
-local function createButton(text, size, position, parent, callback, color)
-    local button = Instance.new("TextButton")
-    button.Size = size
-    button.Position = position
-    button.Text = text
-    button.BackgroundColor3 = color or Color3.fromRGB(0, 255, 0)
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.Parent = parent
-    button.AutoButtonColor = true
-    button.BorderSizePixel = 0
-    button.BorderRadius = UDim.new(0, 12)  -- Bordas arredondadas
-
-    -- Efeitos de animação nos botões
-    button.MouseEnter:Connect(function()
-        button.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-    end)
-    
-    button.MouseLeave:Connect(function()
-        button.BackgroundColor3 = color or Color3.fromRGB(0, 255, 0)
-    end)
-
-    -- Conectar o clique do botão
-    button.MouseButton1Click:Connect(callback)
-    return button
-end
-
--- Função para verificar se a posição de destino está segura
-local function isPositionSafe(position)
-    local part, position = workspace:FindPartOnRay(Ray.new(position, Vector3.new(0, -1, 0)), player.Character)
-    if part then
-        return false
-    end
+-- Funções principais
+function IsValidTarget(player)
+    if not player then return false end
+    if player == LocalPlayer then return false end
+    if not player.Character then return false end
+    if not player.Character:FindFirstChild("Humanoid") then return false end
+    if player.Character.Humanoid.Health <= 0 then return false end
     return true
 end
 
--- Função de teleporte para uma posição segura
-local function teleportToPositionSafe(position)
-    if isPositionSafe(position) then
-        player.Character.HumanoidRootPart.CFrame = CFrame.new(position)
-    else
-        print("Posição não segura para o teleporte.")
+function GetDistance(player1, player2)
+    if not player1.Character or not player2.Character then return math.huge end
+    if not player1.Character:FindFirstChild("HumanoidRootPart") then return math.huge end
+    if not player2.Character:FindFirstChild("HumanoidRootPart") then return math.huge end
+    
+    return (player1.Character.HumanoidRootPart.Position - player2.Character.HumanoidRootPart.Position).Magnitude
+end
+
+function CanBondWith(player)
+    if not IsValidTarget(player) then return false end
+    if GetDistance(LocalPlayer, player) > Settings.AutoBond.Distance then return false end
+    
+    -- Verificar se já está bondado (lógica específica do Dead Realm)
+    -- Esta parte precisa ser adaptada conforme a mecânica exata do jogo
+    return true
+end
+
+function PerformBond(target)
+    if not target then return end
+    
+    -- Simular pressionamento da tecla
+    keypress(Settings.AutoBond.Key)
+    wait(0.05)
+    keyrelease(Settings.AutoBond.Key)
+    
+    LastBondTime = tick()
+    
+    if Settings.AutoBond.Notify then
+        Notify("Bonded with "..target.Name)
+    end
+    
+    table.insert(BondedPlayers, target)
+end
+
+function FindBestTarget()
+    local potentialTargets = {}
+    local players = Players:GetPlayers()
+    
+    for _, player in ipairs(players) do
+        if CanBondWith(player) then
+            table.insert(potentialTargets, player)
+        end
+    end
+    
+    if #potentialTargets == 0 then return nil end
+    if #potentialTargets == 1 then return potentialTargets[1] end
+    
+    -- Lógica de prioridade
+    if Settings.AutoBond.Priority == "Closest" then
+        table.sort(potentialTargets, function(a, b)
+            return GetDistance(LocalPlayer, a) < GetDistance(LocalPlayer, b)
+        end)
+    elseif Settings.AutoBond.Priority == "LowestHealth" then
+        table.sort(potentialTargets, function(a, b)
+            return a.Character.Humanoid.Health < b.Character.Humanoid.Health
+        end)
+    end
+    
+    return potentialTargets[1]
+end
+
+-- Interface do usuário
+function DrawUI()
+    if not Settings.UI.Enabled or not UIShowing then return end
+    
+    local theme = {
+        Dark = {
+            Background = Color3.fromRGB(20, 20, 20),
+            Text = Color3.fromRGB(255, 255, 255),
+            Accent = Color3.fromRGB(0, 150, 255)
+        },
+        Light = {
+            Background = Color3.fromRGB(240, 240, 240),
+            Text = Color3.fromRGB(0, 0, 0),
+            Accent = Color3.fromRGB(0, 100, 255)
+        },
+        Blue = {
+            Background = Color3.fromRGB(10, 30, 50),
+            Text = Color3.fromRGB(200, 230, 255),
+            Accent = Color3.fromRGB(0, 200, 255)
+        }
+    }[Settings.UI.Theme]
+    
+    -- Desenhar fundo
+    drawSquare(Settings.UI.Position.x, Settings.UI.Position.y, 200, 80, theme.Background, 0.7)
+    
+    -- Título
+    drawText("Auto Bond Pro", Settings.UI.Position.x + 10, Settings.UI.Position.y + 5, theme.Accent, 14, true)
+    
+    -- Status
+    local statusText = Settings.AutoBond.Enabled and "ACTIVE" or "INACTIVE"
+    local statusColor = Settings.AutoBond.Enabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
+    drawText("Status: "..statusText, Settings.UI.Position.x + 10, Settings.UI.Position.y + 30, statusColor, 12, false)
+    
+    -- Info
+    drawText("Bonds: "..#BondedPlayers, Settings.UI.Position.x + 10, Settings.UI.Position.y + 50, theme.Text, 12, false)
+end
+
+-- Loop principal
+function AutoBondLoop()
+    while Settings.AutoBond.Enabled do
+        if tick() - LastBondTime >= Settings.AutoBond.Cooldown then
+            local target = FindBestTarget()
+            if target then
+                PerformBond(target)
+            end
+        end
+        wait(Settings.AutoBond.CheckInterval)
     end
 end
 
--- Posições de Tesla e Cidade Abandonada
-local teslaPosition = Vector3.new(150, 50, -200)  -- Substitua com as coordenadas corretas do Tesla
-local cidadeAbandonadaPosition = Vector3.new(-300, 50, 400)  -- Substitua com as coordenadas corretas da Cidade Abandonada
-
--- Função de Teleporte para o Tesla
-local function teleportToTesla()
-    teleportToPositionSafe(teslaPosition)
+-- Controles
+function HandleKeyPress(input)
+    if input.KeyCode == Enum.KeyCode.F1 then
+        Settings.AutoBond.Enabled = not Settings.AutoBond.Enabled
+        Notify("Auto Bond "..(Settings.AutoBond.Enabled and "enabled" or "disabled"))
+        
+        if Settings.AutoBond.Enabled then
+            coroutine.wrap(AutoBondLoop)()
+        end
+    elseif input.KeyCode == Enum.KeyCode.F2 then
+        UIShowing = not UIShowing
+        Notify("UI "..(UIShowing and "shown" or "hidden"))
+    end
 end
 
--- Função de Teleporte para a Cidade Abandonada
-local function teleportToCidadeAbandonada()
-    teleportToPositionSafe(cidadeAbandonadaPosition)
+-- Inicialização
+function Init()
+    -- Verificar ambiente
+    if not drawing or not keypress then
+        warn("Este script requer funções específicas do executor")
+        return
+    end
+    
+    -- Configurar listeners
+    game:GetService("UserInputService").InputBegan:Connect(HandleKeyPress)
+    
+    -- Iniciar loops
+    if Settings.AutoBond.Enabled then
+        coroutine.wrap(AutoBondLoop)()
+    end
+    
+    -- Loop da UI
+    while true do
+        DrawUI()
+        wait(0.1)
+    end
 end
 
--- Botões de Teleporte
-local teslaButton = createButton("Teleport to Tesla", UDim2.new(0, 200, 0, 50), UDim2.new(0, 100, 0, 300), mainFrame, teleportToTesla, Color3.fromRGB(0, 255, 255))
-local cidadeAbandonadaButton = createButton("Teleport to Cidade Abandonada", UDim2.new(0, 200, 0, 50), UDim2.new(0, 100, 0, 400), mainFrame, teleportToCidadeAbandonada, Color3.fromRGB(255, 165, 0))
+-- Notificações
+function Notify(message)
+    if Settings.UI.Enabled then
+        -- Implementar sistema de notificação visual
+        print("[AutoBond] "..message)
+    end
+end
 
--- Inicializa a interface
-animateUI(mainFrame, UDim2.new(0.5, -200, 0.5, -300), UDim2.new(0, 400, 0, 600), 0.5)
+-- Iniciar script
+Init()
