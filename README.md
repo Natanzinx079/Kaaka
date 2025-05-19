@@ -175,6 +175,3 @@ end
 createBlock(pages["Main"], "Webhook Link", "Webhook will be sent after match end!", false)
 createBlock(pages["Main"], "Auto Bond", "Automatically collect bond fast", true)
 createBlock(pages["Main"], "Auto Win", "Automatically win.", true)
-
--- Agora você pode usar createBlock para adicionar elementos nas outras abas
--- Exemplo: createBlock(pages["Character"], "Speed Hack", "Increase walk speed.", true)
