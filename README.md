@@ -1,142 +1,121 @@
--- NATAN DEAD HUB - Interface Profissional estilo NatHub
--- Compatível com Delta Executor e Android
--- Desenvolvido para o jogo Dead Rails
+-- NATAN DEAD HUB - PROFISSIONAL SCRIPT PARA DEAD RAILS
+-- Interface estilo NatHub, com animações, teleporte, ESP, AutoFarm e mais
 
--- Variáveis principais
-local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
-local Mouse = Player:GetMouse()
-local TweenService = game:GetService("TweenService")
-local CoreGui = game:GetService("CoreGui")
-local RunService = game:GetService("RunService")
-local camera = workspace.CurrentCamera
+-- [Inicialização da Interface]
+local NatanUI = Instance.new("ScreenGui")
+NatanUI.Name = "NatanDead"
+NatanUI.ResetOnSpawn = false
+NatanUI.IgnoreGuiInset = true
+NatanUI.ZIndexBehavior = Enum.ZIndexBehavior.Global
+NatanUI.Parent = game.CoreGui
 
--- Função para criar notificações
-local function Notify(msg)
-    game.StarterGui:SetCore("SendNotification", {
-        Title = "Natan Dead",
-        Text = msg,
-        Duration = 4
-    })
-end
+local Main = Instance.new("Frame")
+Main.Size = UDim2.new(0, 600, 0, 400)
+Main.Position = UDim2.new(0.5, -300, 0.5, -200)
+Main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Main.BorderSizePixel = 0
+Main.AnchorPoint = Vector2.new(0.5, 0.5)
+Main.Draggable = true
+Main.Active = true
+Main.Parent = NatanUI
 
--- Criar GUI principal
-local ScreenGui = Instance.new("ScreenGui", CoreGui)
-ScreenGui.Name = "NatanDeadGUI"
+local TopBar = Instance.new("Frame")
+TopBar.Size = UDim2.new(1, 0, 0, 40)
+TopBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+TopBar.Parent = Main
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 420, 0, 290)
-MainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-MainFrame.BorderSizePixel = 0
-MainFrame.BackgroundTransparency = 0.05
-MainFrame.ClipsDescendants = true
-MainFrame.Parent = ScreenGui
-
-local UICorner = Instance.new("UICorner", MainFrame)
-UICorner.CornerRadius = UDim.new(0, 10)
-
--- Título
 local Title = Instance.new("TextLabel")
 Title.Text = "NATAN DEAD"
 Title.Font = Enum.Font.GothamBlack
-Title.TextColor3 = Color3.fromRGB(255, 70, 70)
+Title.TextColor3 = Color3.fromRGB(255, 0, 0)
 Title.TextSize = 22
+Title.Size = UDim2.new(1, 0, 0, 40)
 Title.BackgroundTransparency = 1
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Parent = MainFrame
+Title.Parent = TopBar
 
--- Botões Minimizar e Fechar
 local Close = Instance.new("TextButton")
-Close.Size = UDim2.new(0, 30, 0, 30)
-Close.Position = UDim2.new(1, -35, 0, 0)
 Close.Text = "X"
-Close.TextColor3 = Color3.fromRGB(255, 60, 60)
-Close.TextSize = 18
 Close.Font = Enum.Font.GothamBold
-Close.BackgroundTransparency = 1
-Close.Parent = MainFrame
+Close.TextColor3 = Color3.fromRGB(255, 255, 255)
+Close.TextSize = 18
+Close.Size = UDim2.new(0, 40, 0, 40)
+Close.Position = UDim2.new(1, -40, 0, 0)
+Close.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+Close.Parent = TopBar
 Close.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
+    NatanUI:Destroy()
 end)
 
 local Minimize = Instance.new("TextButton")
-Minimize.Size = UDim2.new(0, 30, 0, 30)
-Minimize.Position = UDim2.new(1, -70, 0, 0)
 Minimize.Text = "-"
-Minimize.TextColor3 = Color3.fromRGB(180, 180, 180)
-Minimize.TextSize = 18
 Minimize.Font = Enum.Font.GothamBold
-Minimize.BackgroundTransparency = 1
-Minimize.Parent = MainFrame
+Minimize.TextColor3 = Color3.fromRGB(255, 255, 255)
+Minimize.TextSize = 18
+Minimize.Size = UDim2.new(0, 40, 0, 40)
+Minimize.Position = UDim2.new(1, -80, 0, 0)
+Minimize.BackgroundColor3 = Color3.fromRGB(50, 50, 0)
+Minimize.Parent = TopBar
 
-local contentVisible = true
+local Content = Instance.new("Frame")
+Content.Size = UDim2.new(1, 0, 1, -40)
+Content.Position = UDim2.new(0, 0, 0, 40)
+Content.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Content.Parent = Main
+
 Minimize.MouseButton1Click:Connect(function()
-    contentVisible = not contentVisible
-    for _, v in pairs(MainFrame:GetChildren()) do
-        if v:IsA("Frame") and v.Name ~= "Tabs" then
-            v.Visible = contentVisible
-        end
-    end
+    Content.Visible = not Content.Visible
 end)
 
--- Tabs laterais
-local Tabs = Instance.new("Frame")
-Tabs.Name = "Tabs"
-Tabs.Size = UDim2.new(0, 100, 1, -30)
-Tabs.Position = UDim2.new(0, 0, 0, 30)
-Tabs.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-Tabs.BorderSizePixel = 0
-Tabs.Parent = MainFrame
+-- [Menu Lateral - Abas]
+local Sidebar = Instance.new("Frame")
+Sidebar.Size = UDim2.new(0, 120, 1, 0)
+Sidebar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+Sidebar.Parent = Content
 
-local TabsCorner = Instance.new("UICorner", Tabs)
-TabsCorner.CornerRadius = UDim.new(0, 6)
+local Tabs = {}
+local TabContent = Instance.new("Frame")
+TabContent.Size = UDim2.new(1, -120, 1, 0)
+TabContent.Position = UDim2.new(0, 120, 0, 0)
+TabContent.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+TabContent.Parent = Content
 
--- Área de conteúdo
-local Content = Instance.new("Frame")
-Content.Name = "Content"
-Content.Size = UDim2.new(1, -100, 1, -30)
-Content.Position = UDim2.new(0, 100, 0, 30)
-Content.BackgroundTransparency = 1
-Content.Parent = MainFrame
-
--- Criar função para gerar abas e conteúdo
-local function CreateTab(name)
+local function createTab(name)
     local Button = Instance.new("TextButton")
-    Button.Size = UDim2.new(1, 0, 0, 30)
-    Button.BackgroundTransparency = 1
     Button.Text = name
+    Button.Font = Enum.Font.GothamBold
+    Button.TextSize = 16
+    Button.Size = UDim2.new(1, 0, 0, 40)
+    Button.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
     Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Button.TextSize = 14
-    Button.Font = Enum.Font.Gotham
-    Button.Parent = Tabs
-
-    local Page = Instance.new("Frame")
-    Page.Name = name
+    Button.Parent = Sidebar
+    
+    local Page = Instance.new("ScrollingFrame")
     Page.Size = UDim2.new(1, 0, 1, 0)
-    Page.BackgroundTransparency = 1
+    Page.CanvasSize = UDim2.new(0, 0, 2, 0)
+    Page.ScrollBarThickness = 6
     Page.Visible = false
-    Page.Parent = Content
+    Page.Parent = TabContent
 
     Button.MouseButton1Click:Connect(function()
-        for _, v in pairs(Content:GetChildren()) do
-            if v:IsA("Frame") then
-                v.Visible = false
-            end
+        for _, tab in pairs(Tabs) do
+            tab.Page.Visible = false
         end
         Page.Visible = true
     end)
 
+    table.insert(Tabs, {Button = Button, Page = Page})
     return Page
 end
 
--- Criar abas
-local MainTab = CreateTab("Main")
-local TeleportsTab = CreateTab("Teleports")
-local ESPTab = CreateTab("ESP")
-local MiscTab = CreateTab("Extras")
+-- [Criando Abas]
+local HomeTab = createTab("Home")
+local TeleportTab = createTab("Teleports")
+local CombatTab = createTab("Combat")
+local VisualTab = createTab("Visual")
+local AutoTab = createTab("Auto")
+local MiscTab = createTab("Misc")
 
--- Ativar a primeira aba por padrão
-Content.Main.Visible = true
+Tabs[1].Page.Visible = true
 
--- Continuação virá com os botões e funcionalidades reais de teleporte, esp e autofarm...
+-- A seguir serão adicionadas as funções reais: TP, ESP, AutoFarm, etc...
+-- Continuar?
