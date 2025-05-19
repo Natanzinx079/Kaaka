@@ -1,97 +1,61 @@
--- NatHub Interface | Compatível com Delta e Android
+local gui = Instance.new("ScreenGui")
+gui.Name = "NatHub"
+gui.IgnoreGuiInset = true
+gui.ResetOnSpawn = false
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Parent = game:FindService("CoreGui")
 
-local player = game.Players.LocalPlayer
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "NatHub"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.IgnoreGuiInset = true
-ScreenGui.Parent = player:WaitForChild("PlayerGui")
+local main = Instance.new("Frame")
+main.Size = UDim2.new(0, 450, 0, 280)
+main.Position = UDim2.new(0.5, -225, 0.5, -140)
+main.AnchorPoint = Vector2.new(0.5, 0.5)
+main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+main.Active = true
+main.Draggable = true
+main.Parent = gui
 
-local DraggableMain = Instance.new("Frame")
-DraggableMain.Size = UDim2.new(0, 450, 0, 280)
-DraggableMain.Position = UDim2.new(0.3, 0, 0.2, 0)
-DraggableMain.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-DraggableMain.BackgroundTransparency = 0.1
-DraggableMain.Active = true
-DraggableMain.Parent = ScreenGui
+local corner = Instance.new("UICorner", main)
+corner.CornerRadius = UDim.new(0, 8)
 
-local dragToggle, dragInput, dragStart, startPos
-DraggableMain.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		dragToggle = true
-		dragStart = input.Position
-		startPos = DraggableMain.Position
-	end
+local stroke = Instance.new("UIStroke", main)
+stroke.Color = Color3.fromRGB(60, 60, 60)
+stroke.Thickness = 1.5
+
+local title = Instance.new("TextLabel", main)
+title.Text = "NatHub | Dead Rails (0.3.1)"
+title.Size = UDim2.new(1, -60, 0, 30)
+title.Position = UDim2.new(0, 10, 0, 5)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 16
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.BackgroundTransparency = 1
+
+local close = Instance.new("TextButton", main)
+close.Text = "✕"
+close.Size = UDim2.new(0, 25, 0, 25)
+close.Position = UDim2.new(1, -30, 0, 5)
+close.Font = Enum.Font.Gotham
+close.TextSize = 16
+close.TextColor3 = Color3.new(1, 1, 1)
+close.BackgroundTransparency = 1
+close.MouseButton1Click:Connect(function()
+	main:Destroy()
 end)
 
-DraggableMain.InputEnded:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		dragToggle = false
-	end
-end)
+local minimize = Instance.new("TextButton", main)
+minimize.Text = "–"
+minimize.Size = UDim2.new(0, 25, 0, 25)
+minimize.Position = UDim2.new(1, -60, 0, 5)
+minimize.Font = Enum.Font.Gotham
+minimize.TextSize = 18
+minimize.TextColor3 = Color3.new(1, 1, 1)
+minimize.BackgroundTransparency = 1
 
-DraggableMain.InputChanged:Connect(function(input)
-	if dragToggle and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-		local delta = input.Position - dragStart
-		DraggableMain.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-	end
-end)
-
-local UICorner = Instance.new("UICorner", DraggableMain)
-UICorner.CornerRadius = UDim.new(0, 8)
-
-local UIStroke = Instance.new("UIStroke", DraggableMain)
-UIStroke.Color = Color3.fromRGB(60, 60, 60)
-UIStroke.Thickness = 1.5
-
-local Title = Instance.new("TextLabel", DraggableMain)
-Title.Text = "NatHub | Dead Rails (0.3.1)"
-Title.Size = UDim2.new(1, -50, 0, 30)
-Title.Position = UDim2.new(0, 10, 0, 5)
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 16
-Title.BackgroundTransparency = 1
-
-local Close = Instance.new("TextButton", DraggableMain)
-Close.Text = "✕"
-Close.Size = UDim2.new(0, 25, 0, 25)
-Close.Position = UDim2.new(1, -30, 0, 5)
-Close.Font = Enum.Font.Gotham
-Close.TextSize = 16
-Close.TextColor3 = Color3.fromRGB(255, 255, 255)
-Close.BackgroundTransparency = 1
-Close.MouseButton1Click:Connect(function()
-	DraggableMain.Visible = false
-end)
-
-local Minimize = Instance.new("TextButton", DraggableMain)
-Minimize.Text = "–"
-Minimize.Size = UDim2.new(0, 25, 0, 25)
-Minimize.Position = UDim2.new(1, -60, 0, 5)
-Minimize.Font = Enum.Font.Gotham
-Minimize.TextSize = 18
-Minimize.TextColor3 = Color3.fromRGB(255, 255, 255)
-Minimize.BackgroundTransparency = 1
-
-local Tabs = Instance.new("Frame", DraggableMain)
-Tabs.Size = UDim2.new(0, 120, 1, -40)
-Tabs.Position = UDim2.new(0, 10, 0, 40)
-Tabs.BackgroundTransparency = 1
-
-local UIListLayout = Instance.new("UIListLayout", Tabs)
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Padding = UDim.new(0, 6)
-
-local Content = Instance.new("Frame", DraggableMain)
-Content.Size = UDim2.new(1, -140, 1, -50)
-Content.Position = UDim2.new(0, 130, 0, 40)
-Content.BackgroundTransparency = 1
-
-Minimize.MouseButton1Click:Connect(function()
-	Content.Visible = not Content.Visible
-end)
+local contentFrame = Instance.new("Frame", main)
+contentFrame.Position = UDim2.new(0, 130, 0, 40)
+contentFrame.Size = UDim2.new(1, -140, 1, -50)
+contentFrame.BackgroundTransparency = 1
 
 local tabs = {
 	{"Main", 6031274630},
@@ -102,67 +66,81 @@ local tabs = {
 	{"Configuration", 6031280882}
 }
 
-for _, tab in ipairs(tabs) do
-	local Button = Instance.new("TextButton", Tabs)
-	Button.Size = UDim2.new(1, -5, 0, 30)
-	Button.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-	Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-	Button.Font = Enum.Font.Gotham
-	Button.TextSize = 14
-	Button.Text = "    " .. tab[1]
-	Button.TextXAlignment = Enum.TextXAlignment.Left
+local tabsFrame = Instance.new("Frame", main)
+tabsFrame.Size = UDim2.new(0, 120, 1, -40)
+tabsFrame.Position = UDim2.new(0, 10, 0, 40)
+tabsFrame.BackgroundTransparency = 1
 
-	local Icon = Instance.new("ImageLabel", Button)
-	Icon.Size = UDim2.new(0, 18, 0, 18)
-	Icon.Position = UDim2.new(0, 6, 0.5, -9)
-	Icon.BackgroundTransparency = 1
-	Icon.Image = "rbxassetid://" .. tostring(tab[2])
+local layout = Instance.new("UIListLayout", tabsFrame)
+layout.Padding = UDim.new(0, 6)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local tabContents = {}
+
+local function createTabContent(name)
+	local frame = Instance.new("Frame", contentFrame)
+	frame.Size = UDim2.new(1, 0, 1, 0)
+	frame.BackgroundTransparency = 1
+	frame.Visible = false
+	tabContents[name] = frame
+	return frame
 end
 
-local MainContent = Instance.new("Frame", Content)
-MainContent.Size = UDim2.new(1, 0, 1, 0)
-MainContent.BackgroundTransparency = 1
-MainContent.Visible = true
-
-local function createBlock(titleText, descText, hasToggle)
-	local Frame = Instance.new("Frame", MainContent)
-	Frame.Size = UDim2.new(1, -10, 0, 60)
-	Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-	Frame.Position = UDim2.new(0, 5, 0, #MainContent:GetChildren() * 65)
-	Frame.BorderSizePixel = 0
-
-	Instance.new("UICorner", Frame)
-
-	local Title = Instance.new("TextLabel", Frame)
-	Title.Text = titleText
-	Title.Font = Enum.Font.GothamSemibold
-	Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-	Title.TextSize = 14
-	Title.BackgroundTransparency = 1
-	Title.Size = UDim2.new(1, -10, 0, 20)
-	Title.Position = UDim2.new(0, 5, 0, 5)
-	Title.TextXAlignment = Enum.TextXAlignment.Left
-
-	local Desc = Instance.new("TextLabel", Frame)
-	Desc.Text = descText
-	Desc.Font = Enum.Font.Gotham
-	Desc.TextColor3 = Color3.fromRGB(180, 180, 180)
-	Desc.TextSize = 12
-	Desc.BackgroundTransparency = 1
-	Desc.Size = UDim2.new(1, -10, 0, 20)
-	Desc.Position = UDim2.new(0, 5, 0, 25)
-	Desc.TextXAlignment = Enum.TextXAlignment.Left
-
-	if hasToggle then
-		local Toggle = Instance.new("TextButton", Frame)
-		Toggle.Size = UDim2.new(0, 20, 0, 20)
-		Toggle.Position = UDim2.new(1, -30, 0.5, -10)
-		Toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-		Toggle.Text = ""
-		Instance.new("UICorner", Toggle)
+local function switchTab(name)
+	for tabName, frame in pairs(tabContents) do
+		frame.Visible = (tabName == name)
 	end
 end
 
-createBlock("Webhook Link", "Webhook will be sent after match end!", false)
-createBlock("Auto Bond", "Automatically collect bond fast", true)
-createBlock("Auto Win", "Automatically win.", true)
+for _, tabData in pairs(tabs) do
+	local tabName, iconId = unpack(tabData)
+	local button = Instance.new("TextButton", tabsFrame)
+	button.Size = UDim2.new(1, -5, 0, 30)
+	button.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+	button.TextColor3 = Color3.fromRGB(255, 255, 255)
+	button.Font = Enum.Font.Gotham
+	button.TextSize = 14
+	button.Text = "    " .. tabName
+	button.TextXAlignment = Enum.TextXAlignment.Left
+
+	local icon = Instance.new("ImageLabel", button)
+	icon.Size = UDim2.new(0, 18, 0, 18)
+	icon.Position = UDim2.new(0, 6, 0.5, -9)
+	icon.BackgroundTransparency = 1
+	icon.Image = "rbxassetid://" .. tostring(iconId)
+
+	local content = createTabContent(tabName)
+	button.MouseButton1Click:Connect(function()
+		switchTab(tabName)
+	end)
+end
+
+-- Show Main by default
+switchTab("Main")
+
+-- Example Content for Main
+local function addExampleContent(parent, text)
+	local label = Instance.new("TextLabel", parent)
+	label.Text = text
+	label.Font = Enum.Font.Gotham
+	label.TextColor3 = Color3.new(1, 1, 1)
+	label.TextSize = 14
+	label.BackgroundTransparency = 1
+	label.Size = UDim2.new(1, -10, 0, 25)
+	label.Position = UDim2.new(0, 5, 0, 5 + (#parent:GetChildren()-1)*30)
+end
+
+addExampleContent(tabContents["Main"], "Auto Bond: ON")
+addExampleContent(tabContents["Main"], "Auto Win: ON")
+addExampleContent(tabContents["Main"], "Webhook: https://...")
+
+-- Minimizar com animação
+local minimized = false
+minimize.MouseButton1Click:Connect(function()
+	minimized = not minimized
+	if minimized then
+		contentFrame:TweenSize(UDim2.new(1, -140, 0, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.3, true)
+	else
+		contentFrame:TweenSize(UDim2.new(1, -140, 1, -50), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.3, true)
+	end
+end)
