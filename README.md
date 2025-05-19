@@ -14,12 +14,8 @@ main.Active = true
 main.Draggable = true
 main.Parent = gui
 
-local corner = Instance.new("UICorner", main)
-corner.CornerRadius = UDim.new(0, 8)
-
-local stroke = Instance.new("UIStroke", main)
-stroke.Color = Color3.fromRGB(60, 60, 60)
-stroke.Thickness = 1.5
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 8)
+Instance.new("UIStroke", main).Color = Color3.fromRGB(60, 60, 60)
 
 local title = Instance.new("TextLabel", main)
 title.Text = "NatHub | Dead Rails (0.3.1)"
@@ -115,10 +111,9 @@ for _, tabData in pairs(tabs) do
 	end)
 end
 
--- Show Main by default
 switchTab("Main")
 
--- Example Content for Main
+-- Conteúdo de exemplo para aba Main
 local function addExampleContent(parent, text)
 	local label = Instance.new("TextLabel", parent)
 	label.Text = text
@@ -134,13 +129,29 @@ addExampleContent(tabContents["Main"], "Auto Bond: ON")
 addExampleContent(tabContents["Main"], "Auto Win: ON")
 addExampleContent(tabContents["Main"], "Webhook: https://...")
 
--- Minimizar com animação
+-- Minimizar tudo com bolinha
 local minimized = false
+local restoreButton = Instance.new("TextButton")
+restoreButton.Text = "+"
+restoreButton.Size = UDim2.new(0, 30, 0, 30)
+restoreButton.Position = UDim2.new(0, 10, 0, 10)
+restoreButton.TextSize = 20
+restoreButton.Font = Enum.Font.GothamBold
+restoreButton.TextColor3 = Color3.new(1, 1, 1)
+restoreButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+restoreButton.Visible = false
+restoreButton.ZIndex = 9999
+Instance.new("UICorner", restoreButton).CornerRadius = UDim.new(1, 0)
+restoreButton.Parent = gui
+
 minimize.MouseButton1Click:Connect(function()
-	minimized = not minimized
-	if minimized then
-		contentFrame:TweenSize(UDim2.new(1, -140, 0, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.3, true)
-	else
-		contentFrame:TweenSize(UDim2.new(1, -140, 1, -50), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.3, true)
-	end
+	minimized = true
+	main.Visible = false
+	restoreButton.Visible = true
+end)
+
+restoreButton.MouseButton1Click:Connect(function()
+	minimized = false
+	main.Visible = true
+	restoreButton.Visible = false
 end)
