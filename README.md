@@ -94,6 +94,8 @@ Content.Position = UDim2.new(0, 130, 0, 40)
 Content.BackgroundTransparency = 1
 Content.Parent = DraggableMain
 
+local pages = {}
+
 for _, tab in ipairs(tabs) do
     local Button = Instance.new("TextButton")
     local Icon = Instance.new("ImageLabel")
@@ -103,7 +105,7 @@ for _, tab in ipairs(tabs) do
     Button.TextColor3 = Color3.fromRGB(255, 255, 255)
     Button.Font = Enum.Font.Gotham
     Button.TextSize = 14
-    Button.Text = "    " .. tab[1]  -- Espaço pro ícone
+    Button.Text = "    " .. tab[1]
     Button.TextXAlignment = Enum.TextXAlignment.Left
     Button.Parent = Tabs
 
@@ -112,22 +114,29 @@ for _, tab in ipairs(tabs) do
     Icon.BackgroundTransparency = 1
     Icon.Image = "rbxassetid://" .. tostring(tab[2])
     Icon.Parent = Button
+
+    local Page = Instance.new("Frame")
+    Page.Name = tab[1]
+    Page.Size = UDim2.new(1, 0, 1, 0)
+    Page.BackgroundTransparency = 1
+    Page.Visible = (tab[1] == "Main")
+    Page.Parent = Content
+    pages[tab[1]] = Page
+
+    Button.MouseButton1Click:Connect(function()
+        for name, pg in pairs(pages) do
+            pg.Visible = (name == tab[1])
+        end
+    end)
 end
 
--- Exemplo de conteúdo funcional no Main
-local MainContent = Instance.new("Frame")
-MainContent.Size = UDim2.new(1, 0, 1, 0)
-MainContent.BackgroundTransparency = 1
-MainContent.Visible = true
-MainContent.Parent = Content
-
-local function createBlock(titleText, descText, hasToggle)
+local function createBlock(parent, titleText, descText, hasToggle)
     local Frame = Instance.new("Frame")
     Frame.Size = UDim2.new(1, -10, 0, 60)
     Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     Frame.Position = UDim2.new(0, 5, 0, 0)
     Frame.BorderSizePixel = 0
-    Frame.Parent = MainContent
+    Frame.Parent = parent
 
     local UICorner = Instance.new("UICorner", Frame)
     local Title = Instance.new("TextLabel")
@@ -163,11 +172,9 @@ local function createBlock(titleText, descText, hasToggle)
     end
 end
 
-createBlock("Webhook Link", "Webhook will be sent after match end!", false)
-createBlock("Auto Bond", "Automatically collect bond fast", true)
-createBlock("Auto Win", "Automatically win.", true)
+createBlock(pages["Main"], "Webhook Link", "Webhook will be sent after match end!", false)
+createBlock(pages["Main"], "Auto Bond", "Automatically collect bond fast", true)
+createBlock(pages["Main"], "Auto Win", "Automatically win.", true)
 
--- Você pode duplicar 'createBlock' em outras abas conforme necessário
--- Também é possível adicionar efeitos e animações se desejar
-
--- Fim do Script
+-- Agora você pode usar createBlock para adicionar elementos nas outras abas
+-- Exemplo: createBlock(pages["Character"], "Speed Hack", "Increase walk speed.", true)
