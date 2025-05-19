@@ -92,98 +92,41 @@ local function createButton(text, size, position, parent, callback, color)
     return button
 end
 
--- Botão de Fechar
-local closeButton = createButton("X", UDim2.new(0, 50, 0, 50), UDim2.new(1, -55, 0, -25), mainFrame, closeUI, Color3.fromRGB(255, 0, 0))
+-- Função para verificar se a posição de destino está segura
+local function isPositionSafe(position)
+    local part, position = workspace:FindPartOnRay(Ray.new(position, Vector3.new(0, -1, 0)), player.Character)
+    if part then
+        return false
+    end
+    return true
+end
 
--- Botão de Minimizar
-local minimizeButton = createButton("-", UDim2.new(0, 50, 0, 50), UDim2.new(1, -110, 0, -25), mainFrame, minimizeUI, Color3.fromRGB(255, 255, 0))
-
--- Funções para controle do jogador (WalkSpeed, JumpPower)
-local function changeWalkSpeed(amount)
-    local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
-    if humanoid then
-        humanoid.WalkSpeed = humanoid.WalkSpeed + amount
+-- Função de teleporte para uma posição segura
+local function teleportToPositionSafe(position)
+    if isPositionSafe(position) then
+        player.Character.HumanoidRootPart.CFrame = CFrame.new(position)
+    else
+        print("Posição não segura para o teleporte.")
     end
 end
 
-local function changeJumpPower(amount)
-    local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
-    if humanoid then
-        humanoid.JumpPower = humanoid.JumpPower + amount
-    end
+-- Posições de Tesla e Cidade Abandonada
+local teslaPosition = Vector3.new(150, 50, -200)  -- Substitua com as coordenadas corretas do Tesla
+local cidadeAbandonadaPosition = Vector3.new(-300, 50, 400)  -- Substitua com as coordenadas corretas da Cidade Abandonada
+
+-- Função de Teleporte para o Tesla
+local function teleportToTesla()
+    teleportToPositionSafe(teslaPosition)
 end
 
--- Função Fly (do KiciaHook)
-local isFlying = false
-local function toggleFly()
-    local character = player.Character
-    if character then
-        local humanoid = character:FindFirstChild("Humanoid")
-        if humanoid and not isFlying then
-            isFlying = true
-            humanoid.PlatformStand = true
-            local bodyGyro = Instance.new("BodyGyro")
-            local bodyVelocity = Instance.new("BodyVelocity")
-            bodyGyro.MaxTorque = Vector3.new(400000, 400000, 400000)
-            bodyGyro.CFrame = character.HumanoidRootPart.CFrame
-            bodyGyro.P = 3000
-            bodyGyro.Parent = character.HumanoidRootPart
-            bodyVelocity.MaxForce = Vector3.new(400000, 400000, 400000)
-            bodyVelocity.Velocity = Vector3.new(0, 50, 0)  -- Velocidade para "levitar"
-            bodyVelocity.Parent = character.HumanoidRootPart
-
-            wait(0.1)  -- Espera para aplicar a velocidade
-
-            -- Fica voando
-            while isFlying do
-                bodyGyro.CFrame = character.HumanoidRootPart.CFrame
-                wait(0.1)
-            end
-        elseif humanoid then
-            isFlying = false
-            humanoid.PlatformStand = false
-            -- Remover as forças aplicadas para o voo
-            character.HumanoidRootPart:FindFirstChild("BodyGyro"):Destroy()
-            character.HumanoidRootPart:FindFirstChild("BodyVelocity"):Destroy()
-        end
-    end
+-- Função de Teleporte para a Cidade Abandonada
+local function teleportToCidadeAbandonada()
+    teleportToPositionSafe(cidadeAbandonadaPosition)
 end
 
--- Botão Fly
-local flyButton = createButton("Fly", UDim2.new(0, 200, 0, 50), UDim2.new(0, 100, 0, 300), mainFrame, toggleFly, Color3.fromRGB(0, 0, 255))
-
--- Adicionando controles de velocidade e pulo
-local walkSpeedSlider = createButton("Walk Speed: 16", UDim2.new(0, 200, 0, 50), UDim2.new(0, 100, 0, 400), mainFrame, function()
-    changeWalkSpeed(5)  -- Aumenta a velocidade de caminhada
-    walkSpeedSlider.Text = "Walk Speed: " .. player.Character.Humanoid.WalkSpeed
-end)
-
-local jumpPowerSlider = createButton("Jump Power: 50", UDim2.new(0, 200, 0, 50), UDim2.new(0, 100, 0, 500), mainFrame, function()
-    changeJumpPower(10)  -- Aumenta o poder de pulo
-    jumpPowerSlider.Text = "Jump Power: " .. player.Character.Humanoid.JumpPower
-end)
-
--- Função de teleporte para um ponto específico
-local teleportButton = createButton("Teleport", UDim2.new(0, 200, 0, 50), UDim2.new(0, 100, 0, 600), mainFrame, function()
-    player.Character:MoveTo(Vector3.new(100, 50, 100))  -- Teleporta para a posição (100, 50, 100)
-end)
-
--- Função de Auto Bond (simulação)
-local bondCollectionEnabled = false
-local function toggleBondCollection()
-    bondCollectionEnabled = not bondCollectionEnabled
-    print("Auto Bond: " .. (bondCollectionEnabled and "Enabled" or "Disabled"))
-
-    if bondCollectionEnabled then
-        while bondCollectionEnabled do
-            wait(1)  -- Coleta de bond (simulação)
-            print("Coletando Bond...")
-            -- Lógica de coleta de bond aqui
-        end
-    end
-end
-
-local autoBondButton = createButton("Auto Bond", UDim2.new(0, 200, 0, 50), UDim2.new(0, 100, 0, 700), mainFrame, toggleBondCollection, Color3.fromRGB(255, 165, 0))
+-- Botões de Teleporte
+local teslaButton = createButton("Teleport to Tesla", UDim2.new(0, 200, 0, 50), UDim2.new(0, 100, 0, 300), mainFrame, teleportToTesla, Color3.fromRGB(0, 255, 255))
+local cidadeAbandonadaButton = createButton("Teleport to Cidade Abandonada", UDim2.new(0, 200, 0, 50), UDim2.new(0, 100, 0, 400), mainFrame, teleportToCidadeAbandonada, Color3.fromRGB(255, 165, 0))
 
 -- Inicializa a interface
 animateUI(mainFrame, UDim2.new(0.5, -200, 0.5, -300), UDim2.new(0, 400, 0, 600), 0.5)
