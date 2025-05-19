@@ -123,6 +123,115 @@ for i, name in ipairs(buttonNames) do
     end)
 end
 
+-- Função Teleport segura
+local function teleportTo(position)
+    local player = game.Players.LocalPlayer
+    local char = player.Character or player.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+
+    hrp.CFrame = CFrame.new(position)
+end
+
+-- Exemplo de posições de teleporte, ajuste conforme o seu jogo Dead Rails
+local teleportPoints = {
+    ["Trem"] = Vector3.new(100, 10, 200),  -- Exemplo
+    ["Base 1"] = Vector3.new(500, 15, 600),
+    ["Base 2"] = Vector3.new(900, 20, 1200),
+    ["Final"] = Vector3.new(1500, 25, 1800),
+}
+
+-- Criar botões de teleporte na aba TeleportTab
+for name, pos in pairs(teleportPoints) do
+    local btn = Instance.new("TextButton")
+    btn.Parent = TeleportTab
+    btn.Size = UDim2.new(0, 180, 0, 35)
+    btn.Position = UDim2.new(0, 10, 0, (#TeleportTab:GetChildren()-1) * 40 + 10)
+    btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextScaled = true
+    btn.Text = "Teleportar para " .. name
+
+    btn.MouseButton1Click:Connect(function()
+        teleportTo(pos)
+    end)
+end
+
+-- Função básica para ESP com Boxes e linhas para jogadores (exemplo)
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local ESPFolder = Instance.new("Folder", game.CoreGui)
+ESPFolder.Name = "NatanDeadESP"
+
+local ESPEnabled = false
+
+local function createESPForPlayer(plr)
+    if plr == LocalPlayer then return end
+    local espBox = Instance.new("BoxHandleAdornment")
+    espBox.Adornee = plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
+    espBox.Color3 = Color3.new(1, 0, 0)
+    espBox.AlwaysOnTop = true
+    espBox.ZIndex = 10
+    espBox.Size = Vector3.new(4, 6, 2)
+    espBox.Transparency = 0.5
+    espBox.Parent = ESPFolder
+    return espBox
+end
+
+local ESPBoxes = {}
+
+function toggleESP(enabled)
+    ESPEnabled = enabled
+    if not enabled then
+        for _, box in pairs(ESPBoxes) do
+            box:Destroy()
+        end
+        ESPBoxes = {}
+    else
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+                ESPBoxes[plr.Name] = createESPForPlayer(plr)
+            end
+        end
+    end
+end
+
+Players.PlayerAdded:Connect(function(plr)
+    plr.CharacterAdded:Connect(function()
+        if ESPEnabled then
+            ESPBoxes[plr.Name] = createESPForPlayer(plr)
+        end
+    end)
+end)
+
+Players.PlayerRemoving:Connect(function(plr)
+    if ESPBoxes[plr.Name] then
+        ESPBoxes[plr.Name]:Destroy()
+        ESPBoxes[plr.Name] = nil
+    end
+end)
+
+-- Botão na aba Visual para ativar/desativar ESP
+local espToggleBtn = Instance.new("TextButton")
+espToggleBtn.Parent = VisualTab
+espToggleBtn.Size = UDim2.new(0, 200, 0, 35)
+espToggleBtn.Position = UDim2.new(0, 10, 0, 10)
+espToggleBtn.BackgroundColor3 = Color3.fromRGB(70, 0, 0)
+espToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+espToggleBtn.Font = Enum.Font.GothamBold
+espToggleBtn.TextScaled = true
+espToggleBtn.Text = "ESP Jogadores: DESATIVADO"
+
+local espOn = false
+espToggleBtn.MouseButton1Click:Connect(function()
+    espOn = not espOn
+    toggleESP(espOn)
+    espToggleBtn.Text = "ESP Jogadores: " .. (espOn and "ATIVADO" or "DESATIVADO")
+    espToggleBtn.BackgroundColor3 = espOn and Color3.fromRGB(150, 0, 0) or Color3.fromRGB(70, 0, 0)
+end)
+
 -- Continuação com funções reais virá a seguir...
 
 -- Deseja agora que eu adicione os botões e scripts funcionais nas abas (teleporte, autofarm, esp, etc)?
