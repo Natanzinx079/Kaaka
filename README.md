@@ -1,91 +1,122 @@
 local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
-ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.Name = "NatHub"
 
--- Estado do menu
-local isMinimized = false
+-- Main Frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 400, 0, 250)
+MainFrame.Position = UDim2.new(0.5, -200, 0.5, -125)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MainFrame.BackgroundTransparency = 0.1
+MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = true
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.Parent = ScreenGui
+MainFrame.Visible = true
 
--- Container principal
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 420, 0, 260)
-mainFrame.Position = UDim2.new(0.5, -210, 0.5, -130)
-mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-mainFrame.BorderSizePixel = 0
-mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-mainFrame.Parent = ScreenGui
-mainFrame.Active = true
-mainFrame.Draggable = true
-mainFrame.BackgroundTransparency = 0.1
+-- UICorner
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = MainFrame
 
--- UI extras
-local uiCorner = Instance.new("UICorner", mainFrame)
-uiCorner.CornerRadius = UDim.new(0, 12)
-local uiStroke = Instance.new("UIStroke", mainFrame)
-uiStroke.Color = Color3.fromRGB(60, 60, 60)
-uiStroke.Thickness = 1.2
+-- TopBar
+local TopBar = Instance.new("Frame")
+TopBar.Name = "TopBar"
+TopBar.Size = UDim2.new(1, 0, 0, 30)
+TopBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+TopBar.BorderSizePixel = 0
+TopBar.Parent = MainFrame
 
--- Botão minimizar
-local minimize = Instance.new("TextButton")
-minimize.Size = UDim2.new(0, 25, 0, 25)
-minimize.Position = UDim2.new(1, -30, 0, 5)
-minimize.Text = "-"
-minimize.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-minimize.TextColor3 = Color3.fromRGB(255, 255, 255)
-minimize.Font = Enum.Font.GothamBold
-minimize.TextSize = 18
-minimize.Parent = mainFrame
+local UICornerBar = Instance.new("UICorner", TopBar)
+UICornerBar.CornerRadius = UDim.new(0, 12)
 
-Instance.new("UICorner", minimize).CornerRadius = UDim.new(0, 6)
+-- Title
+local Title = Instance.new("TextLabel")
+Title.Text = "NatHub | DBacon"
+Title.Font = Enum.Font.GothamSemibold
+Title.TextSize = 14
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.BackgroundTransparency = 1
+Title.Size = UDim2.new(1, -60, 1, 0)
+Title.Position = UDim2.new(0, 10, 0, 0)
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = TopBar
 
--- Label superior
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, -40, 0, 30)
-titleLabel.Position = UDim2.new(0, 10, 0, 0)
-titleLabel.Text = "NatHub | DBacon"
-titleLabel.Font = Enum.Font.GothamSemibold
-titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-titleLabel.BackgroundTransparency = 1
-titleLabel.TextSize = 16
-titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-titleLabel.Parent = mainFrame
+-- Close Button (X)
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Text = "X"
+CloseBtn.Font = Enum.Font.Gotham
+CloseBtn.TextSize = 14
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Position = UDim2.new(1, -60, 0, 0)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.Parent = TopBar
 
--- Lado esquerdo (menu de abas)
-local sideMenu = Instance.new("Frame")
-sideMenu.Size = UDim2.new(0, 80, 1, -40)
-sideMenu.Position = UDim2.new(0, 0, 0, 40)
-sideMenu.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-sideMenu.Parent = mainFrame
+-- Minimize Button (-)
+local MinBtn = Instance.new("TextButton")
+MinBtn.Text = "-"
+MinBtn.Font = Enum.Font.Gotham
+MinBtn.TextSize = 20
+MinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinBtn.Size = UDim2.new(0, 30, 0, 30)
+MinBtn.Position = UDim2.new(1, -30, 0, 0)
+MinBtn.BackgroundTransparency = 1
+MinBtn.Parent = TopBar
 
-Instance.new("UICorner", sideMenu).CornerRadius = UDim.new(0, 8)
+-- Side Menu
+local SideMenu = Instance.new("Frame")
+SideMenu.Name = "SideMenu"
+SideMenu.Size = UDim2.new(0, 100, 1, -30)
+SideMenu.Position = UDim2.new(0, 0, 0, 30)
+SideMenu.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+SideMenu.BorderSizePixel = 0
+SideMenu.Parent = MainFrame
 
--- Botão "Main"
-local mainBtn = Instance.new("TextButton")
-mainBtn.Size = UDim2.new(1, 0, 0, 40)
-mainBtn.Position = UDim2.new(0, 0, 0, 0)
-mainBtn.Text = "Main"
-mainBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-mainBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-mainBtn.Font = Enum.Font.Gotham
-mainBtn.TextSize = 14
-mainBtn.Parent = sideMenu
+local UICornerMenu = Instance.new("UICorner", SideMenu)
+UICornerMenu.CornerRadius = UDim.new(0, 8)
 
-Instance.new("UICorner", mainBtn).CornerRadius = UDim.new(0, 6)
+-- Main Button (aba)
+local MainButton = Instance.new("TextButton")
+MainButton.Text = "Main"
+MainButton.Size = UDim2.new(1, 0, 0, 40)
+MainButton.Position = UDim2.new(0, 0, 0, 0)
+MainButton.Font = Enum.Font.Gotham
+MainButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MainButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+MainButton.BorderSizePixel = 0
+MainButton.Parent = SideMenu
 
--- Função para animar visibilidade
-local function toggleMenu()
-	isMinimized = not isMinimized
-	for _, v in ipairs(mainFrame:GetChildren()) do
-		if v ~= minimize then
-			if isMinimized then
-				game.TweenService:Create(v, TweenInfo.new(0.25), {Transparency = 1, Position = v.Position + UDim2.new(0, 0, 0, 10)}):Play()
-				wait(0.25)
-				v.Visible = false
-			else
-				v.Visible = true
-				game.TweenService:Create(v, TweenInfo.new(0.25), {Transparency = 0, Position = v.Position - UDim2.new(0, 0, 0, 10)}):Play()
-			end
-		end
+-- Main Content Area
+local MainContent = Instance.new("Frame")
+MainContent.Name = "MainContent"
+MainContent.Size = UDim2.new(1, -100, 1, -30)
+MainContent.Position = UDim2.new(0, 100, 0, 30)
+MainContent.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+MainContent.BorderSizePixel = 0
+MainContent.Parent = MainFrame
+
+local UICornerContent = Instance.new("UICorner", MainContent)
+UICornerContent.CornerRadius = UDim.new(0, 8)
+
+-- Funcionalidade do botão X
+CloseBtn.MouseButton1Click:Connect(function()
+	ScreenGui:Destroy()
+end)
+
+-- Funcionalidade do botão -
+local minimized = false
+MinBtn.MouseButton1Click:Connect(function()
+	if minimized then
+		MainFrame:TweenSize(UDim2.new(0, 400, 0, 250), "Out", "Quad", 0.3, true)
+		wait(0.3)
+		SideMenu.Visible = true
+		MainContent.Visible = true
+	else
+		SideMenu.Visible = false
+		MainContent.Visible = false
+		MainFrame:TweenSize(UDim2.new(0, 400, 0, 30), "Out", "Quad", 0.3, true)
 	end
-end
-
--- Conectar botão de minimizar
-minimize.MouseButton1Click:Connect(toggleMenu)
+	minimized = not minimized
+end)
