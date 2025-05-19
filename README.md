@@ -2,184 +2,151 @@ local TweenService = game:GetService("TweenService")
 local player = game.Players.LocalPlayer
 local userInterface = player.PlayerGui
 
--- Criação da GUI
+-- Criação do ScreenGui
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "NatHubGUI"
+screenGui.Name = "CustomGUI"
 screenGui.Parent = userInterface
 
+-- Função de animação para mover e redimensionar a interface
+local function animateUI(frame, position, size, duration)
+    local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut)
+    local tween = TweenService:Create(frame, tweenInfo, {Position = position, Size = size})
+    tween:Play()
+end
+
+-- Função para minimizar a interface
+local isMinimized = false
+local function minimizeUI()
+    if not isMinimized then
+        animateUI(mainFrame, UDim2.new(0.5, -50, 0.5, 50), UDim2.new(0, 100, 0, 50), 0.5)
+        minimizeButton.Text = "+"
+        isMinimized = true
+    else
+        animateUI(mainFrame, UDim2.new(0.5, -200, 0.5, -300), UDim2.new(0, 400, 0, 600), 0.5)
+        minimizeButton.Text = "-"
+        isMinimized = false
+    end
+end
+
+-- Função para fechar a interface
+local function closeUI()
+    animateUI(mainFrame, UDim2.new(0.5, -200, 0.5, 200), UDim2.new(0, 0, 0, 0), 0.5)
+    wait(0.5)
+    screenGui:Destroy()  -- Fecha a interface completamente
+end
+
+-- Função para mostrar o bolinho no centro ao minimizar
+local bolinho = Instance.new("ImageLabel")
+bolinho.Size = UDim2.new(0, 100, 0, 100)
+bolinho.Position = UDim2.new(0.5, -50, 0.5, -50)
+bolinho.Image = "rbxassetid://YOUR_IMAGE_ID"  -- Substitua com o ID da sua imagem
+bolinho.Parent = screenGui
+bolinho.Visible = false
+
+local function showBolinho()
+    bolinho.Visible = true
+    local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Bounce, Enum.EasingDirection.Out)
+    local tween = TweenService:Create(bolinho, tweenInfo, {Position = UDim2.new(0.5, -50, 0.5, -50), Size = UDim2.new(0, 100, 0, 100)})
+    tween:Play()
+    wait(0.3)
+    bolinho.Visible = false
+end
+
+-- Criação do Frame principal
 local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 400, 0, 600)
 mainFrame.Position = UDim2.new(0.5, -200, 0.5, -300)
-mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = screenGui
+mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+mainFrame.BackgroundTransparency = 0.2
 
--- Função de transição suave entre abas
-local function tweenTabTransition(fromTab, toTab)
-    local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
-    local tweenOut = TweenService:Create(fromTab, tweenInfo, {Position = UDim2.new(1, 0, 0.5, -50)})
-    local tweenIn = TweenService:Create(toTab, tweenInfo, {Position = UDim2.new(0.5, -200, 0.5, -50)})
+-- Adicionando bordas arredondadas
+mainFrame.UIListLayout = Instance.new("UIListLayout")
+mainFrame.UIListLayout.Parent = mainFrame
+mainFrame.BorderRadius = UDim.new(0, 15)  -- Borda arredondada
 
-    tweenOut:Play()
-    tweenOut.Completed:Connect(function()
-        fromTab.Visible = false
-        toTab.Visible = true
-        tweenIn:Play()
+-- Função para criar botões arredondados
+local function createButton(text, size, position, parent, callback)
+    local button = Instance.new("TextButton")
+    button.Size = size
+    button.Position = position
+    button.Text = text
+    button.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.Parent = parent
+    button.AutoButtonColor = true
+    button.BorderSizePixel = 0
+    button.BorderRadius = UDim.new(0, 12)  -- Bordas arredondadas
+
+    -- Animação de hover
+    button.MouseEnter:Connect(function()
+        button.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
     end)
+    
+    button.MouseLeave:Connect(function()
+        button.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    end)
+
+    -- Conectar evento de clique
+    button.MouseButton1Click:Connect(callback)
+    return button
 end
 
--- Criar abas
-local tabs = {"Main", "Character", "Teleport", "Visual", "Combat", "Configuration"}
-local tabButtons = {}
-local contentFrames = {}
+-- Botão de Fechar
+local closeButton = createButton("X", UDim2.new(0, 50, 0, 50), UDim2.new(1, -55, 0, -25), mainFrame, closeUI)
 
-for i, tab in ipairs(tabs) do
-    local tabButton = Instance.new("TextButton")
-    tabButton.Size = UDim2.new(0, 100, 0, 50)
-    tabButton.Position = UDim2.new(0, (i - 1) * 100, 0, 0)
-    tabButton.Text = tab
-    tabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    tabButton.Parent = mainFrame
-    table.insert(tabButtons, tabButton)
+-- Botão de Minimizar
+local minimizeButton = createButton("-", UDim2.new(0, 50, 0, 50), UDim2.new(1, -110, 0, -25), mainFrame, minimizeUI)
 
-    local contentFrame = Instance.new("Frame")
-    contentFrame.Size = UDim2.new(1, 0, 1, -50)
-    contentFrame.Position = UDim2.new(0, 0, 0, 50)
-    contentFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    contentFrame.BorderSizePixel = 0
-    contentFrame.Visible = false
-    contentFrame.Parent = mainFrame
-    table.insert(contentFrames, contentFrame)
-end
-
--- Alternar abas
-local currentTab = nil
-local function switchTab(tabIndex)
-    if currentTab then
-        tweenTabTransition(contentFrames[currentTab], contentFrames[tabIndex])
-    else
-        contentFrames[tabIndex].Visible = true
+-- Funções para alterar atributos do jogador
+local function changeWalkSpeed(amount)
+    local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+    if humanoid then
+        humanoid.WalkSpeed = humanoid.WalkSpeed + amount
     end
-    currentTab = tabIndex
 end
 
-for i, button in ipairs(tabButtons) do
-    button.MouseButton1Click:Connect(function()
-        switchTab(i)
-    end)
+local function changeJumpPower(amount)
+    local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+    if humanoid then
+        humanoid.JumpPower = humanoid.JumpPower + amount
+    end
 end
 
--- Variáveis para controle
+-- Adicionando controles de velocidade e pulo
+local walkSpeedSlider = createButton("Walk Speed: 16", UDim2.new(0, 200, 0, 50), UDim2.new(0, 100, 0, 300), mainFrame, function()
+    changeWalkSpeed(5)  -- Aumenta a velocidade de caminhada
+    walkSpeedSlider.Text = "Walk Speed: " .. player.Character.Humanoid.WalkSpeed
+end)
+
+local jumpPowerSlider = createButton("Jump Power: 50", UDim2.new(0, 200, 0, 50), UDim2.new(0, 100, 0, 400), mainFrame, function()
+    changeJumpPower(10)  -- Aumenta o poder de pulo
+    jumpPowerSlider.Text = "Jump Power: " .. player.Character.Humanoid.JumpPower
+end)
+
+-- Função de teleporte para um ponto específico
+local teleportButton = createButton("Teleport", UDim2.new(0, 200, 0, 50), UDim2.new(0, 100, 0, 500), mainFrame, function()
+    player.Character:MoveTo(Vector3.new(100, 50, 100))  -- Teleporta para a posição (100, 50, 100)
+end)
+
+-- Função de Auto Bond (simulação)
 local bondCollectionEnabled = false
-local autoWinEnabled = false
-
--- Coleta de Bond (função melhorada)
 local function toggleBondCollection()
     bondCollectionEnabled = not bondCollectionEnabled
-    print("Bond Collection: " .. (bondCollectionEnabled and "Enabled" or "Disabled"))
+    print("Auto Bond: " .. (bondCollectionEnabled and "Enabled" or "Disabled"))
 
-    -- Simula o comportamento do bond no jogo real
     if bondCollectionEnabled then
         while bondCollectionEnabled do
-            wait(1)  -- Coleta de bond (essa é a lógica fictícia)
+            wait(1)  -- Coleta de bond (simulação)
             print("Coletando Bond...")
-            -- Aqui deve vir a lógica de coleta de bond no jogo
+            -- Lógica de coleta de bond aqui
         end
     end
 end
 
-local bondButton = Instance.new("TextButton")
-bondButton.Size = UDim2.new(0, 200, 0, 50)
-bondButton.Position = UDim2.new(0, 100, 0, 200)
-bondButton.Text = "Auto Bond"
-bondButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-bondButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-bondButton.Parent = contentFrames[1]
-bondButton.MouseButton1Click:Connect(function()
-    toggleBondCollection()
-    -- Alterar cor do botão para indicar o estado
-    bondButton.BackgroundColor3 = bondCollectionEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(50, 50, 50)
-end)
+local autoBondButton = createButton("Auto Bond", UDim2.new(0, 200, 0, 50), UDim2.new(0, 100, 0, 600), mainFrame, toggleBondCollection)
 
--- Ajuste do personagem (speed, jump)
-local walkSpeedSlider = Instance.new("TextButton")
-walkSpeedSlider.Size = UDim2.new(0, 200, 0, 50)
-walkSpeedSlider.Position = UDim2.new(0, 100, 0, 300)
-walkSpeedSlider.Text = "Walk Speed: 16"
-walkSpeedSlider.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-walkSpeedSlider.TextColor3 = Color3.fromRGB(255, 255, 255)
-walkSpeedSlider.Parent = contentFrames[2]
-walkSpeedSlider.MouseButton1Click:Connect(function()
-    local newSpeed = walkSpeedSlider.Text:match("(%d+)") + 1
-    walkSpeedSlider.Text = "Walk Speed: " .. newSpeed
-    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = newSpeed
-end)
-
-local jumpPowerSlider = Instance.new("TextButton")
-jumpPowerSlider.Size = UDim2.new(0, 200, 0, 50)
-jumpPowerSlider.Position = UDim2.new(0, 100, 0, 400)
-jumpPowerSlider.Text = "Jump Power: 50"
-jumpPowerSlider.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-jumpPowerSlider.TextColor3 = Color3.fromRGB(255, 255, 255)
-jumpPowerSlider.Parent = contentFrames[2]
-jumpPowerSlider.MouseButton1Click:Connect(function()
-    local newJump = jumpPowerSlider.Text:match("(%d+)") + 10
-    jumpPowerSlider.Text = "Jump Power: " .. newJump
-    game.Players.LocalPlayer.Character.Humanoid.JumpPower = newJump
-end)
-
--- Auto Win (função real)
-local function toggleAutoWin()
-    autoWinEnabled = not autoWinEnabled
-    print("Auto Win: " .. (autoWinEnabled and "Enabled" or "Disabled"))
-    -- Simula o comportamento de Auto Win (lógica fictícia)
-    while autoWinEnabled do
-        wait(1)  -- Exemplo de "loop" de vitória
-        print("Ganhando automaticamente...")
-        -- Coloque aqui o código que aciona a vitória automática
-    end
-end
-
-local autoWinButton = Instance.new("TextButton")
-autoWinButton.Size = UDim2.new(0, 200, 0, 50)
-autoWinButton.Position = UDim2.new(0, 100, 0, 500)
-autoWinButton.Text = "Auto Win"
-autoWinButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-autoWinButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-autoWinButton.Parent = contentFrames[5]
-autoWinButton.MouseButton1Click:Connect(function()
-    toggleAutoWin()
-    autoWinButton.BackgroundColor3 = autoWinEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(50, 50, 50)
-end)
-
--- Teleporte (exemplo fictício)
-local teleportButton = Instance.new("TextButton")
-teleportButton.Size = UDim2.new(0, 200, 0, 50)
-teleportButton.Position = UDim2.new(0, 100, 0, 600)
-teleportButton.Text = "Teleport"
-teleportButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-teleportButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-teleportButton.Parent = contentFrames[3]
-teleportButton.MouseButton1Click:Connect(function()
-    -- Teleportar o jogador para uma nova posição
-    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(0, 100, 0)
-    print("Teleportado!")
-end)
-
--- Visual Settings (exemplo de mudança de transparência)
-local visualButton = Instance.new("TextButton")
-visualButton.Size = UDim2.new(0, 200, 0, 50)
-visualButton.Position = UDim2.new(0, 100, 0, 700)
-visualButton.Text = "Visual Settings"
-visualButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-visualButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-visualButton.Parent = contentFrames[4]
-visualButton.MouseButton1Click:Connect(function()
-    -- Modificar transparência do personagem
-    game.Players.LocalPlayer.Character.HumanoidRootPart.Transparency = 0.5
-    print("Visibilidade alterada!")
-end)
-
--- Inicializar a aba principal
-switchTab(1)
+-- Inicializa a interface
+animateUI(mainFrame, UDim2.new(0.5, -200, 0.5, -300), UDim2.new(0, 400, 0, 600), 0.5)
