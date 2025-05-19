@@ -1,57 +1,55 @@
--- Natan Dead Rails - Nathub Style (com scroll e altura maior)
-local ScreenGui = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"))
-ScreenGui.Name = "NatanHub"
-ScreenGui.ResetOnSpawn = false
+-- NatanHub | Dead Rails (Nathub Style)
+-- Compatível com Delta Executor para Android
 
--- Main Frame
-local main = Instance.new("Frame", ScreenGui)
-main.Size = UDim2.new(0, 420, 0, 400)
-main.Position = UDim2.new(0.3, 0, 0.3, 0)
-main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+if not game:IsLoaded() then game.Loaded:Wait() end
+
+local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "NatanHub"
+
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.new(0, 480, 0, 320)
+main.Position = UDim2.new(0.5, -240, 0.5, -160)
+main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 main.BorderSizePixel = 0
-main.Visible = true
-Instance.new("UICorner", main).CornerRadius = UDim.new(0, 10)
+main.Active = true
+main.Draggable = true
 
--- Top bar
-local top = Instance.new("Frame", main)
-top.Size = UDim2.new(1, 0, 0, 30)
-top.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-top.BorderSizePixel = 0
-Instance.new("UICorner", top).CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 8)
 
--- Title
-local title = Instance.new("TextLabel", top)
-title.Size = UDim2.new(1, -60, 1, 0)
-title.Position = UDim2.new(0, 10, 0, 0)
-title.Text = "NatanHub | Dead Rails (0.3.1)"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.TextSize = 16
-title.Font = Enum.Font.GothamBold
+local topbar = Instance.new("Frame", main)
+topbar.Size = UDim2.new(1, 0, 0, 30)
+topbar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+topbar.BorderSizePixel = 0
+Instance.new("UICorner", topbar).CornerRadius = UDim.new(0, 8)
+
+local title = Instance.new("TextLabel", topbar)
+title.Size = UDim2.new(1, 0, 1, 0)
 title.BackgroundTransparency = 1
+title.Text = "  NatanHub | Dead Rails (0.3.1)"
+title.TextColor3 = Color3.new(1,1,1)
 title.TextXAlignment = Enum.TextXAlignment.Left
+title.Font = Enum.Font.GothamBold
+title.TextSize = 14
 
--- Close & Minimize Buttons
-local close = Instance.new("TextButton", top)
-close.Size = UDim2.new(0, 30, 1, 0)
-close.Position = UDim2.new(1, -35, 0, 0)
-close.Text = "X"
-close.BackgroundColor3 = Color3.fromRGB(180, 30, 30)
-close.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner", close).CornerRadius = UDim.new(0, 6)
+local closeBtn = Instance.new("TextButton", topbar)
+closeBtn.Size = UDim2.new(0, 30, 0, 30)
+closeBtn.Position = UDim2.new(1, -30, 0, 0)
+closeBtn.Text = "🟥"
+closeBtn.TextColor3 = Color3.new(1,1,1)
+closeBtn.BackgroundTransparency = 1
+closeBtn.Font = Enum.Font.Gotham
+closeBtn.TextSize = 16
 
-local minimize = Instance.new("TextButton", top)
-minimize.Size = UDim2.new(0, 30, 1, 0)
-minimize.Position = UDim2.new(1, -70, 0, 0)
-minimize.Text = "-"
-minimize.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-minimize.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner", minimize).CornerRadius = UDim.new(0, 6)
+closeBtn.MouseButton1Click:Connect(function()
+	gui:Destroy()
+end)
 
--- Side Tabs
 local sideTabs = Instance.new("Frame", main)
 sideTabs.Size = UDim2.new(0, 100, 1, -30)
 sideTabs.Position = UDim2.new(0, 0, 0, 30)
-sideTabs.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+sideTabs.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 sideTabs.BorderSizePixel = 0
 Instance.new("UICorner", sideTabs).CornerRadius = UDim.new(0, 6)
 
@@ -73,10 +71,19 @@ for i, name in ipairs(tabNames) do
 	page.Size = UDim2.new(1, -100, 1, -30)
 	page.Position = UDim2.new(0, 100, 0, 30)
 	page.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-	page.ScrollBarThickness = 4
-	page.CanvasSize = UDim2.new(0, 0, 2, 0)
 	page.Visible = (i == 1)
+	page.BorderSizePixel = 0
+	page.ScrollBarThickness = 6
+	page.CanvasSize = UDim2.new(0, 0, 2, 0)
+	page.AutomaticCanvasSize = Enum.AutomaticSize.Y
+	page.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+	page.ClipsDescendants = true
 	Instance.new("UICorner", page).CornerRadius = UDim.new(0, 6)
+
+	local uiListLayout = Instance.new("UIListLayout", page)
+	uiListLayout.Padding = UDim.new(0, 6)
+	uiListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
 	pages[name] = page
 
 	button.MouseButton1Click:Connect(function()
@@ -85,69 +92,64 @@ for i, name in ipairs(tabNames) do
 	end)
 end
 
--- Sliders na aba Character
-local charPage = pages["Character"]
+-- Exemplo de conteúdo em uma aba (Main)
+local webhookLabel = Instance.new("TextLabel", pages["Main"])
+webhookLabel.Size = UDim2.new(1, -20, 0, 20)
+webhookLabel.Position = UDim2.new(0, 10, 0, 10)
+webhookLabel.BackgroundTransparency = 1
+webhookLabel.Text = "Webhook Link"
+webhookLabel.TextColor3 = Color3.new(1,1,1)
+webhookLabel.Font = Enum.Font.Gotham
+webhookLabel.TextSize = 14
+webhookLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-local function createSlider(parent, name, min, max, default, callback)
-	local y = #parent:GetChildren() * 30
+local webhookBox = Instance.new("TextBox", pages["Main"])
+webhookBox.Size = UDim2.new(1, -20, 0, 30)
+webhookBox.Position = UDim2.new(0, 10, 0, 36)
+webhookBox.Text = "Your Webhook Link"
+webhookBox.TextColor3 = Color3.new(1,1,1)
+webhookBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+webhookBox.ClearTextOnFocus = false
+webhookBox.Font = Enum.Font.Gotham
+webhookBox.TextSize = 14
+Instance.new("UICorner", webhookBox).CornerRadius = UDim.new(0, 6)
 
-	local label = Instance.new("TextLabel", parent)
-	label.Size = UDim2.new(0, 200, 0, 20)
-	label.Position = UDim2.new(0, 10, 0, y)
-	label.Text = name .. ": " .. default
-	label.TextColor3 = Color3.new(1,1,1)
-	label.BackgroundTransparency = 1
-	label.Font = Enum.Font.Gotham
-	label.TextSize = 14
+local autoBondLabel = Instance.new("TextLabel", pages["Main"])
+autoBondLabel.Size = UDim2.new(1, -20, 0, 20)
+autoBondLabel.Position = UDim2.new(0, 10, 0, 72)
+autoBondLabel.BackgroundTransparency = 1
+autoBondLabel.Text = "Auto Obrigação"
+autoBondLabel.TextColor3 = Color3.new(1,1,1)
+autoBondLabel.Font = Enum.Font.Gotham
+autoBondLabel.TextSize = 14
+autoBondLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-	local box = Instance.new("TextBox", parent)
-	box.Size = UDim2.new(0, 60, 0, 20)
-	box.Position = UDim2.new(0, 220, 0, y)
-	box.Text = tostring(default)
-	box.TextColor3 = Color3.new(1,1,1)
-	box.BackgroundColor3 = Color3.fromRGB(50,50,50)
-	box.Font = Enum.Font.Gotham
-	box.TextSize = 14
-	Instance.new("UICorner", box).CornerRadius = UDim.new(0, 6)
+local autoBondToggle = Instance.new("TextButton", pages["Main"])
+autoBondToggle.Size = UDim2.new(0, 100, 0, 30)
+autoBondToggle.Position = UDim2.new(0, 10, 0, 98)
+autoBondToggle.Text = "OFF"
+autoBondToggle.TextColor3 = Color3.new(1,1,1)
+autoBondToggle.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+autoBondToggle.Font = Enum.Font.Gotham
+autoBondToggle.TextSize = 14
+Instance.new("UICorner", autoBondToggle).CornerRadius = UDim.new(0, 6)
 
-	box.FocusLost:Connect(function()
-		local num = tonumber(box.Text)
-		if num then
-			num = math.clamp(num, min, max)
-			callback(num)
-			label.Text = name .. ": " .. num
-		end
-	end)
-end
-
-createSlider(charPage, "WalkSpeed", 16, 100, 16, function(value)
-	game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
+local auto = false
+autoBondToggle.MouseButton1Click:Connect(function()
+	auto = not auto
+	autoBondToggle.Text = auto and "ON" or "OFF"
 end)
 
-createSlider(charPage, "JumpPower", 50, 200, 50, function(value)
-	game.Players.LocalPlayer.Character.Humanoid.JumpPower = value
-end)
+local winBtn = Instance.new("TextButton", pages["Main"])
+winBtn.Size = UDim2.new(1, -20, 0, 30)
+winBtn.Position = UDim2.new(0, 10, 0, 134)
+winBtn.Text = "Auto Win"
+winBtn.TextColor3 = Color3.new(1,1,1)
+winBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+winBtn.Font = Enum.Font.GothamBold
+winBtn.TextSize = 14
+Instance.new("UICorner", winBtn).CornerRadius = UDim.new(0, 6)
 
--- Minimizar/Restaurar
-local miniBtn = Instance.new("TextButton", ScreenGui)
-miniBtn.Size = UDim2.new(0, 100, 0, 30)
-miniBtn.Position = UDim2.new(0, 10, 0.4, 0)
-miniBtn.Text = "NatanHub"
-miniBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-miniBtn.TextColor3 = Color3.new(1,1,1)
-miniBtn.Visible = false
-Instance.new("UICorner", miniBtn).CornerRadius = UDim.new(0, 6)
-
-minimize.MouseButton1Click:Connect(function()
-	main.Visible = false
-	miniBtn.Visible = true
-end)
-
-miniBtn.MouseButton1Click:Connect(function()
-	main.Visible = true
-	miniBtn.Visible = false
-end)
-
-close.MouseButton1Click:Connect(function()
-	ScreenGui:Destroy()
+winBtn.MouseButton1Click:Connect(function()
+	-- lógica de vitória aqui
 end)
