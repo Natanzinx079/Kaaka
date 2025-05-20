@@ -159,14 +159,6 @@ local function CreateSlider(tab, name, min, max, default, callback)
     end)
 end
 
--- Slider funcional
-CreateSlider(Tabs["Misc"], "WallSpeed", 1, 100, 25, function(val)
-    local char = game.Players.LocalPlayer.Character
-    if char and char:FindFirstChild("Humanoid") then
-        char.Humanoid.WalkSpeed = val
-    end
-end)
-
     Bar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
@@ -187,3 +179,11 @@ end)
             UIS.ModalEnabled = false -- libera câmera
         end
     end)
+
+-- Slider funcional
+CreateSlider(Tabs["Misc"], "WallSpeed", 1, 100, 25, function(val)
+    local char = game.Players.LocalPlayer.Character
+    if char and char:FindFirstChild("Humanoid") then
+        char.Humanoid.WalkSpeed = val
+    end
+end)
