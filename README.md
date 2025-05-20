@@ -1,317 +1,189 @@
--- Dead Realm Ultimate Script
--- Versão 4.0 - Nathub Style Plus
--- Compatível com Delta e Android
+-- GUI NAT-HUB FIXADO
+local Gui = Instance.new("ScreenGui", game.CoreGui)
+Gui.Name = "NatHubUI"
+Gui.ResetOnSpawn = false
 
-local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Rayfield/main/source'))()
-local Window = Rayfield:CreateWindow({
-   Name = "Dead Realm Ultimate",
-   LoadingTitle = "Nathub Style Plus",
-   LoadingSubtitle = "by github/seuscréditos",
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = "DeadRealmConfig",
-      FileName = "NathubStylePlus"
-   },
-   Discord = {
-      Enabled = true,
-      Invite = "discordlink",
-      RememberJoins = true
-   }
-})
+local UIS = game:GetService("UserInputService")
 
--- Configurações principais
-local Settings = {
-    AutoBond = {
-        Enabled = false,
-        Key = "E",
-        Distance = 30,
-        Cooldown = 1.5,
-        Priority = "Closest",
-        Notify = true,
-        Sound = true,
-        AntiDetection = true
-    },
-    Visuals = {
-        ESP = {
-            Enabled = false,
-            TeamCheck = true,
-            Boxes = true,
-            Names = true,
-            Health = true,
-            Distance = true,
-            Color = Color3.fromRGB(0, 255, 0)
-        },
-        Crosshair = {
-            Enabled = true,
-            Style = "Plus",
-            Color = Color3.fromRGB(255, 0, 0),
-            Size = 12,
-            Gap = 3
-        }
-    },
-    Combat = {
-        AutoAim = {
-            Enabled = false,
-            Key = "Q",
-            FOV = 50,
-            Smoothness = 0.2,
-            HitChance = 95,
-            Priority = "Closest"
-        },
-        TriggerBot = {
-            Enabled = false,
-            Delay = 0.1,
-            Range = 20
-        }
-    },
-    Movement = {
-        Speed = {
-            Enabled = false,
-            Speed = 22,
-            Mode = "CFrame"
-        },
-        BHop = {
-            Enabled = false,
-            Power = 45
-        }
-    },
-    Misc = {
-        AntiAFK = true,
-        FullBright = false,
-        FPSBoost = true,
-        Rejoin = {
-            Enabled = false,
-            Delay = 300
-        }
-    }
+-- Main
+local Main = Instance.new("Frame", Gui)
+Main.Size = UDim2.new(0, 400, 0, 300)
+Main.Position = UDim2.new(0.5, -200, 0.5, -150)
+Main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Main.BorderSizePixel = 0
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
+
+local Header = Instance.new("TextLabel", Main)
+Header.Size = UDim2.new(1, 0, 0, 36)
+Header.BackgroundTransparency = 1
+Header.Text = "NatHub | Dead Reais"
+Header.Font = Enum.Font.GothamBold
+Header.TextSize = 16
+Header.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+local MinBtn = Instance.new("TextButton", Main)
+MinBtn.Size = UDim2.new(0, 30, 0, 30)
+MinBtn.Position = UDim2.new(1, -65, 0, 3)
+MinBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+MinBtn.Text = "-"
+MinBtn.Font = Enum.Font.GothamBold
+MinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinBtn.TextSize = 20
+Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(1, 0)
+
+local CloseBtn = Instance.new("TextButton", Main)
+CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Position = UDim2.new(1, -35, 0, 3)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+CloseBtn.Text = "X"
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.TextSize = 14
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(1, 0)
+
+local ContentGroup = Instance.new("Frame", Main)
+ContentGroup.Size = UDim2.new(1, 0, 1, -36)
+ContentGroup.Position = UDim2.new(0, 0, 0, 36)
+ContentGroup.BackgroundTransparency = 1
+
+-- Minimizar
+local minimized = false
+MinBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    ContentGroup.Visible = not minimized
+end)
+CloseBtn.MouseButton1Click:Connect(function()
+    Gui:Destroy()
+end)
+
+-- Sidebar
+local SideBar = Instance.new("Frame", ContentGroup)
+SideBar.Size = UDim2.new(0, 50, 1, 0)
+SideBar.Position = UDim2.new(0, 0, 0, 0)
+SideBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Instance.new("UICorner", SideBar).CornerRadius = UDim.new(0, 10)
+
+local UIList = Instance.new("UIListLayout", SideBar)
+UIList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+UIList.SortOrder = Enum.SortOrder.LayoutOrder
+UIList.Padding = UDim.new(0, 5)
+
+local Tabs = {}
+local CurrentTab = nil
+local tabList = {
+    {Name = "Misc", Icon = "rbxassetid://6031075938"},
+    {Name = "Player", Icon = "rbxassetid://6031265976"},
 }
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local RunService = game:GetService("RunService")
-local UIS = game:GetService("UserInputService")
-local Camera = workspace.CurrentCamera
-local BondedPlayers = {}
-local LastBondTime = 0
-local Target = nil
-local Connections = {}
+for _, tab in ipairs(tabList) do
+    local Btn = Instance.new("ImageButton", SideBar)
+    Btn.Size = UDim2.new(0, 40, 0, 40)
+    Btn.Image = tab.Icon
+    Btn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(1, 0)
 
-function Notify(Title, Text, Duration)
-    Rayfield:Notify({
-        Title = Title,
-        Content = Text,
-        Duration = Duration or 5,
-        Image = 4483362458,
-        Actions = {
-            Ignore = {
-                Name = "Ok",
-                Callback = function() end
-            },
-        },
-    })
+    local Page = Instance.new("Frame", ContentGroup)
+    Page.Name = tab.Name.."Page"
+    Page.Size = UDim2.new(1, -60, 1, 0)
+    Page.Position = UDim2.new(0, 60, 0, 0)
+    Page.BackgroundTransparency = 1
+    Page.Visible = false
+
+    Tabs[tab.Name] = Page
+
+    Btn.MouseButton1Click:Connect(function()
+        if CurrentTab then Tabs[CurrentTab].Visible = false end
+        Page.Visible = true
+        CurrentTab = tab.Name
+    end)
 end
 
-function PlaySound(ID)
-    if not Settings.AutoBond.Sound then return end
-    local Sound = Instance.new("Sound")
-    Sound.SoundId = "rbxassetid://"..ID
-    Sound.Parent = workspace
-    Sound:Play()
-    game:Debris:AddItem(Sound, 2)
-end
+Tabs["Misc"].Visible = true
+CurrentTab = "Misc"
 
-function GetCharacter(Player)
-    return Player and Player.Character or nil
-end
+-- Slider com TOUCH (compatível com Android/Delta)
+local function CreateSlider(tab, name, min, max, default, callback)
+    local Frame = Instance.new("Frame", tab)
+    Frame.Size = UDim2.new(1, -20, 0, 60)
+    Frame.Position = UDim2.new(0, 10, 0, 10)
+    Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
 
-function GetHumanoid(Player)
-    local Char = GetCharacter(Player)
-    return Char and Char:FindFirstChildOfClass("Humanoid") or nil
-end
+    local Title = Instance.new("TextLabel", Frame)
+    Title.Text = name.." ("..default..")"
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 14
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.BackgroundTransparency = 1
+    Title.Size = UDim2.new(1, -10, 0, 20)
+    Title.Position = UDim2.new(0, 5, 0, 0)
 
-function IsAlive(Player)
-    local Humanoid = GetHumanoid(Player)
-    return Humanoid and Humanoid.Health > 0 or false
-end
+    local Bar = Instance.new("Frame", Frame)
+    Bar.Size = UDim2.new(1, -20, 0, 10)
+    Bar.Position = UDim2.new(0, 10, 0, 30)
+    Bar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Instance.new("UICorner", Bar).CornerRadius = UDim.new(0, 4)
 
-function GetTeam(Player)
-    return Player and Player.Team or nil
-end
+    local Fill = Instance.new("Frame", Bar)
+    Fill.Name = "Fill"
+    Fill.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+    Fill.Size = UDim2.new((default - min)/(max - min), 0, 1, 0)
+    Fill.Position = UDim2.new(0, 0, 0, 0)
+    Fill.ZIndex = 2
+    Fill.BorderSizePixel = 0
+    Instance.new("UICorner", Fill).CornerRadius = UDim.new(0, 4)
 
-function IsEnemy(Player)
-    return GetTeam(Player) ~= GetTeam(LocalPlayer)
-end
+    local dragging = false
 
-function GetDistance(Player)
-    local Char1, Char2 = GetCharacter(LocalPlayer), GetCharacter(Player)
-    if not Char1 or not Char2 then return math.huge end
-    local Root1, Root2 = Char1:FindFirstChild("HumanoidRootPart"), Char2:FindFirstChild("HumanoidRootPart")
-    if not Root1 or not Root2 then return math.huge end
-    return (Root1.Position - Root2.Position).Magnitude
-end
-
-function CanBond(Player)
-    if not IsAlive(Player) then return false end
-    if not IsEnemy(Player) then return false end
-    if table.find(BondedPlayers, Player) then return false end
-    if GetDistance(Player) > Settings.AutoBond.Distance then return false end
-    return true
-end
-
-function FindBestBondTarget()
-    local PotentialTargets = {}
-
-    for _, Player in ipairs(Players:GetPlayers()) do
-        if Player ~= LocalPlayer and CanBond(Player) then
-            table.insert(PotentialTargets, Player)
-        end
+    local function update(input)
+        local pct = math.clamp((input.Position.X - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X, 0, 1)
+        Fill.Size = UDim2.new(pct, 0, 1, 0)
+        local value = math.floor(min + (max - min) * pct)
+        Title.Text = name.." ("..value..")"
+        callback(value)
     end
 
-    if #PotentialTargets == 0 then return nil end
-    if #PotentialTargets == 1 then return PotentialTargets[1] end
+    Bar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            update(input)
+        end
+    end)
+    UIS.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+            update(input)
+        end
+    end)
+    UIS.InputEnded:Connect(function(input)
+        dragging = false
+    end)
+end
 
-    table.sort(PotentialTargets, function(a, b)
-        if Settings.AutoBond.Priority == "Closest" then
-            return GetDistance(a) < GetDistance(b)
-        elseif Settings.AutoBond.Priority == "LowestHP" then
-            return GetHumanoid(a).Health < GetHumanoid(b).Health
-        else
-            return math.random() > 0.5
+-- Slider funcional
+CreateSlider(Tabs["Misc"], "WallSpeed", 1, 100, 25, function(val)
+    local char = game.Players.LocalPlayer.Character
+    if char and char:FindFirstChild("Humanoid") then
+        char.Humanoid.WalkSpeed = val
+    end
+end)
+
+    Bar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            UIS.ModalEnabled = true -- trava câmera
+            update(input)
         end
     end)
 
-    return PotentialTargets[1]
-end
-
-function PerformBond()
-    if not Settings.AutoBond.Enabled then return end
-    if tick() - LastBondTime < Settings.AutoBond.Cooldown then return end
-
-    local Target = FindBestBondTarget()
-    if not Target then return end
-
-    -- >>> REMOVIDO virtualInput para compatibilidade com Delta/Android <<<
-    -- Simular ação: aqui você pode substituir por firetouchinterest ou outro método
-
-    LastBondTime = tick()
-    table.insert(BondedPlayers, Target)
-
-    if Settings.AutoBond.Notify then
-        Notify("Auto Bond", "Bonded with "..Target.Name)
-        PlaySound(6537351034)
-    end
-end
-
--- Interface Nathub Style
-local AutoBondTab = Window:CreateTab("Auto Bond", 4483362458)
-local CombatTab = Window:CreateTab("Combat", 4483362458)
-local VisualsTab = Window:CreateTab("Visuals", 4483362458)
-local MovementTab = Window:CreateTab("Movement", 4483362458)
-local MiscTab = Window:CreateTab("Misc", 4483362458)
-
-AutoBondTab:CreateToggle({
-    Name = "Auto Bond",
-    CurrentValue = Settings.AutoBond.Enabled,
-    Flag = "AutoBondToggle",
-    Callback = function(Value)
-        Settings.AutoBond.Enabled = Value
-        if Value then
-            Notify("Auto Bond", "Auto Bond ativado!")
+    UIS.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+            update(input)
         end
-    end
-})
+    end)
 
-AutoBondTab:CreateDropdown({
-    Name = "Prioridade",
-    Options = {"Closest", "LowestHP", "Random"},
-    CurrentOption = Settings.AutoBond.Priority,
-    Flag = "PriorityDropdown",
-    Callback = function(Option)
-        Settings.AutoBond.Priority = Option
-    end
-})
-
-AutoBondTab:CreateSlider({
-    Name = "Distância",
-    Range = {10, 50},
-    Increment = 1,
-    Suffix = "studs",
-    CurrentValue = Settings.AutoBond.Distance,
-    Flag = "DistanceSlider",
-    Callback = function(Value)
-        Settings.AutoBond.Distance = Value
-    end
-})
-
-CombatTab:CreateToggle({
-    Name = "Auto Aim",
-    CurrentValue = Settings.Combat.AutoAim.Enabled,
-    Flag = "AutoAimToggle",
-    Callback = function(Value)
-        Settings.Combat.AutoAim.Enabled = Value
-    end
-})
-
-VisualsTab:CreateToggle({
-    Name = "ESP",
-    CurrentValue = Settings.Visuals.ESP.Enabled,
-    Flag = "ESPToggle",
-    Callback = function(Value)
-        Settings.Visuals.ESP.Enabled = Value
-    end
-})
-
-MovementTab:CreateToggle({
-    Name = "Speed Hack",
-    CurrentValue = Settings.Movement.Speed.Enabled,
-    Flag = "SpeedToggle",
-    Callback = function(Value)
-        Settings.Movement.Speed.Enabled = Value
-    end
-})
-
-MiscTab:CreateToggle({
-    Name = "Anti-AFK",
-    CurrentValue = Settings.Misc.AntiAFK,
-    Flag = "AntiAFKToggle",
-    Callback = function(Value)
-        Settings.Misc.AntiAFK = Value
-    end
-})
-
-table.insert(Connections, RunService.Heartbeat:Connect(function()
-    if Settings.AutoBond.Enabled then
-        PerformBond()
-    end
-
-    if Settings.Movement.Speed.Enabled and IsAlive(LocalPlayer) then
-        local Char = GetCharacter(LocalPlayer)
-        local Humanoid = GetHumanoid(LocalPlayer)
-        if Humanoid then
-            if Settings.Movement.Speed.Mode == "CFrame" then
-                -- Código para CFrame Speed
-            else
-                -- Código para Velocity Speed
-            end
+    UIS.InputEnded:Connect(function(input)
+        if dragging then
+            dragging = false
+            UIS.ModalEnabled = false -- libera câmera
         end
-    end
-end))
-
-if Settings.Misc.AntiAFK then
-    table.insert(Connections, game:GetService("Players").LocalPlayer.Idled:Connect(function()
-        game:GetService("VirtualUser"):Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-        task.wait(1)
-        game:GetService("VirtualUser"):Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-    end))
-end
-
-Notify("Dead Realm Ultimate", "Script carregado com sucesso!", 8)
-
-game:GetService("Players").PlayerRemoving:Connect(function(Player)
-    if Player == LocalPlayer then
-        for _, Connection in ipairs(Connections) do
-            Connection:Disconnect()
-        end
-        Rayfield:Destroy()
-    end
-end)
+    end)
