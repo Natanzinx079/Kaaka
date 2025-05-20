@@ -210,3 +210,77 @@ CreateSlider(Tabs["Misc"], "WallSpeed", 1, 100, 25, function(val)
 		char.Humanoid.WalkSpeed = val
 	end
 end)
+
+-- Função: ESP de NPCs (ativar/desativar com ícone)
+local npcESPEnabled = false
+local npcESPConnections = {}
+
+local function createNPCESP(npc)
+	if not npcESPEnabled then return end
+	local billboard = Instance.new("BillboardGui", npc:FindFirstChild("Head") or npc)
+	billboard.Name = "NPC_ESP"
+	billboard.Size = UDim2.new(0, 100, 0, 30)
+	billboard.AlwaysOnTop = true
+	local label = Instance.new("TextLabel", billboard)
+	label.Size = UDim2.new(1, 0, 1, 0)
+	label.BackgroundTransparency = 1
+	label.Text = "NPC"
+	label.Font = Enum.Font.GothamBold
+	label.TextColor3 = Color3.fromRGB(255, 50, 50)
+	label.TextStrokeTransparency = 0.7
+	label.TextSize = 14
+end
+
+local function toggleNPCESP()
+	npcESPEnabled = not npcESPEnabled
+
+	for _, conn in ipairs(npcESPConnections) do
+		conn:Disconnect()
+	end
+	npcESPConnections = {}
+
+	for _, npc in ipairs(workspace:GetDescendants()) do
+		if npc:IsA("Model") and npc:FindFirstChild("Humanoid") and npc:FindFirstChild("Head") and not Players:GetPlayerFromCharacter(npc) then
+			if npcESPEnabled then
+				if not npc:FindFirstChild("NPC_ESP") then
+					createNPCESP(npc)
+				end
+			else
+				local gui = npc:FindFirstChild("NPC_ESP")
+				if gui then gui:Destroy() end
+			end
+		end
+	end
+
+	if npcESPEnabled then
+		table.insert(npcESPConnections, workspace.DescendantAdded:Connect(function(obj)
+			if obj:IsA("Model") and obj:FindFirstChild("Humanoid") and obj:FindFirstChild("Head") and not Players:GetPlayerFromCharacter(obj) then
+				task.wait(0.2)
+				createNPCESP(obj)
+			end
+		end))
+	end
+end
+
+-- Botão com ícone (estilo NatHub)
+local function CreateIconButton(tab, tooltip, iconId, callback)
+	local Btn = Instance.new("ImageButton", tab)
+	Btn.Size = UDim2.new(0, 40, 0, 40)
+	Btn.Image = iconId
+	Btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	Instance.new("UICorner", Btn).CornerRadius = UDim.new(1, 0)
+
+	local tip = Instance.new("TextLabel", Btn)
+	tip.Text = tooltip
+	tip.TextColor3 = Color3.fromRGB(255, 255, 255)
+	tip.TextSize = 12
+	tip.Font = Enum.Font.Gotham
+	tip.BackgroundTransparency = 1
+	tip.Size = UDim2.new(1, 0, 0, 14)
+	tip.Position = UDim2.new(0, 0, 1, 0)
+
+	Btn.MouseButton1Click:Connect(callback)
+end
+
+-- Adiciona botão ESP NPC na aba Misc
+CreateIconButton(Tabs["Misc"], "ESP NPC", "rbxassetid://6031068426", toggleNPCESP)
