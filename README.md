@@ -1,16 +1,19 @@
--- GUI NAT-HUB FIXADO
+local TweenService = game:GetService("TweenService")
+local UIS = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
 local Gui = Instance.new("ScreenGui", game.CoreGui)
 Gui.Name = "NatHubUI"
 Gui.ResetOnSpawn = false
 
-local UIS = game:GetService("UserInputService")
-
--- Main
 local Main = Instance.new("Frame", Gui)
 Main.Size = UDim2.new(0, 400, 0, 300)
 Main.Position = UDim2.new(0.5, -200, 0.5, -150)
 Main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 Main.BorderSizePixel = 0
+Main.Active = true
+Main.Draggable = true
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
 
 local Header = Instance.new("TextLabel", Main)
@@ -46,17 +49,53 @@ ContentGroup.Size = UDim2.new(1, 0, 1, -36)
 ContentGroup.Position = UDim2.new(0, 0, 0, 36)
 ContentGroup.BackgroundTransparency = 1
 
--- Minimizar
-local minimized = false
-MinBtn.MouseButton1Click:Connect(function()
-    minimized = not minimized
-    ContentGroup.Visible = not minimized
-end)
 CloseBtn.MouseButton1Click:Connect(function()
-    Gui:Destroy()
+	Gui:Destroy()
 end)
 
--- Sidebar
+-- Botão de restaurar
+local RestoreBtn = Instance.new("TextButton", Gui)
+RestoreBtn.Size = UDim2.new(0, 80, 0, 30)
+RestoreBtn.Position = UDim2.new(0.5, -40, 0.5, -15)
+RestoreBtn.Text = "NatHub"
+RestoreBtn.Visible = false
+RestoreBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+RestoreBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+RestoreBtn.Font = Enum.Font.GothamBold
+RestoreBtn.TextSize = 14
+Instance.new("UICorner", RestoreBtn).CornerRadius = UDim.new(0, 8)
+
+-- Corrigido: Animação de minimizar com botão de restaurar
+local minimized = false
+MinBtn.MouseButton1Click:Connect(function()
+	if not minimized then
+		minimized = true
+		local tweenOut = TweenService:Create(Main, TweenInfo.new(0.3), {
+			Size = UDim2.new(0, 0, 0, 0),
+			Position = UDim2.new(0.5, 0, 0.5, 0)
+		})
+		tweenOut:Play()
+		tweenOut.Completed:Once(function()
+			Main.Visible = false
+			RestoreBtn.Visible = true
+		end)
+	end
+end)
+
+RestoreBtn.MouseButton1Click:Connect(function()
+	RestoreBtn.Visible = false
+	Main.Visible = true
+	Main.Size = UDim2.new(0, 0, 0, 0)
+	Main.Position = UDim2.new(0.5, 0, 0.5, 0)
+	local tweenIn = TweenService:Create(Main, TweenInfo.new(0.3), {
+		Size = UDim2.new(0, 400, 0, 300),
+		Position = UDim2.new(0.5, -200, 0.5, -150)
+	})
+	tweenIn:Play()
+	minimized = false
+end)
+
+-- Tabs
 local SideBar = Instance.new("Frame", ContentGroup)
 SideBar.Size = UDim2.new(0, 50, 1, 0)
 SideBar.Position = UDim2.new(0, 0, 0, 0)
@@ -71,119 +110,103 @@ UIList.Padding = UDim.new(0, 5)
 local Tabs = {}
 local CurrentTab = nil
 local tabList = {
-    {Name = "Misc", Icon = "rbxassetid://6031075938"},
-    {Name = "Player", Icon = "rbxassetid://6031265976"},
+	{Name = "Misc", Icon = "rbxassetid://6031075938"},
+	{Name = "Player", Icon = "rbxassetid://6031265976"},
 }
 
 for _, tab in ipairs(tabList) do
-    local Btn = Instance.new("ImageButton", SideBar)
-    Btn.Size = UDim2.new(0, 40, 0, 40)
-    Btn.Image = tab.Icon
-    Btn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    Instance.new("UICorner", Btn).CornerRadius = UDim.new(1, 0)
+	local Btn = Instance.new("ImageButton", SideBar)
+	Btn.Size = UDim2.new(0, 40, 0, 40)
+	Btn.Image = tab.Icon
+	Btn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+	Instance.new("UICorner", Btn).CornerRadius = UDim.new(1, 0)
 
-    local Page = Instance.new("Frame", ContentGroup)
-    Page.Name = tab.Name.."Page"
-    Page.Size = UDim2.new(1, -60, 1, 0)
-    Page.Position = UDim2.new(0, 60, 0, 0)
-    Page.BackgroundTransparency = 1
-    Page.Visible = false
+	local Page = Instance.new("Frame", ContentGroup)
+	Page.Name = tab.Name.."Page"
+	Page.Size = UDim2.new(1, -60, 1, 0)
+	Page.Position = UDim2.new(0, 60, 0, 0)
+	Page.BackgroundTransparency = 1
+	Page.Visible = false
 
-    Tabs[tab.Name] = Page
+	Tabs[tab.Name] = Page
 
-    Btn.MouseButton1Click:Connect(function()
-        if CurrentTab then Tabs[CurrentTab].Visible = false end
-        Page.Visible = true
-        CurrentTab = tab.Name
-    end)
+	Btn.MouseButton1Click:Connect(function()
+		if CurrentTab then Tabs[CurrentTab].Visible = false end
+		Page.Visible = true
+		CurrentTab = tab.Name
+	end)
 end
 
 Tabs["Misc"].Visible = true
 CurrentTab = "Misc"
 
--- Slider com TOUCH (compatível com Android/Delta)
+-- Slider funcional
 local function CreateSlider(tab, name, min, max, default, callback)
-    local Frame = Instance.new("Frame", tab)
-    Frame.Size = UDim2.new(1, -20, 0, 60)
-    Frame.Position = UDim2.new(0, 10, 0, 10)
-    Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
+	local Frame = Instance.new("Frame", tab)
+	Frame.Size = UDim2.new(1, -20, 0, 60)
+	Frame.Position = UDim2.new(0, 10, 0, 10)
+	Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
 
-    local Title = Instance.new("TextLabel", Frame)
-    Title.Text = name.." ("..default..")"
-    Title.Font = Enum.Font.GothamBold
-    Title.TextSize = 14
-    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Title.BackgroundTransparency = 1
-    Title.Size = UDim2.new(1, -10, 0, 20)
-    Title.Position = UDim2.new(0, 5, 0, 0)
+	local Title = Instance.new("TextLabel", Frame)
+	Title.Text = name.." ("..default..")"
+	Title.Font = Enum.Font.GothamBold
+	Title.TextSize = 14
+	Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+	Title.BackgroundTransparency = 1
+	Title.Size = UDim2.new(1, -10, 0, 20)
+	Title.Position = UDim2.new(0, 5, 0, 0)
 
-    local Bar = Instance.new("Frame", Frame)
-    Bar.Size = UDim2.new(1, -20, 0, 10)
-    Bar.Position = UDim2.new(0, 10, 0, 30)
-    Bar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    Instance.new("UICorner", Bar).CornerRadius = UDim.new(0, 4)
+	local Bar = Instance.new("Frame", Frame)
+	Bar.Size = UDim2.new(1, -20, 0, 10)
+	Bar.Position = UDim2.new(0, 10, 0, 30)
+	Bar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	Instance.new("UICorner", Bar).CornerRadius = UDim.new(0, 4)
 
-    local Fill = Instance.new("Frame", Bar)
-    Fill.Name = "Fill"
-    Fill.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
-    Fill.Size = UDim2.new((default - min)/(max - min), 0, 1, 0)
-    Fill.Position = UDim2.new(0, 0, 0, 0)
-    Fill.ZIndex = 2
-    Fill.BorderSizePixel = 0
-    Instance.new("UICorner", Fill).CornerRadius = UDim.new(0, 4)
+	local Fill = Instance.new("Frame", Bar)
+	Fill.Name = "Fill"
+	Fill.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+	Fill.Size = UDim2.new((default - min)/(max - min), 0, 1, 0)
+	Fill.Position = UDim2.new(0, 0, 0, 0)
+	Fill.BorderSizePixel = 0
+	Fill.ZIndex = 2
+	Instance.new("UICorner", Fill).CornerRadius = UDim.new(0, 4)
 
-    local dragging = false
+	local dragging = false
 
-    local function update(input)
-        local pct = math.clamp((input.Position.X - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X, 0, 1)
-        Fill.Size = UDim2.new(pct, 0, 1, 0)
-        local value = math.floor(min + (max - min) * pct)
-        Title.Text = name.." ("..value..")"
-        callback(value)
-    end
+	local function update(input)
+		local pct = math.clamp((input.Position.X - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X, 0, 1)
+		Fill.Size = UDim2.new(pct, 0, 1, 0)
+		local value = math.floor(min + (max - min) * pct)
+		Title.Text = name.." ("..value..")"
+		callback(value)
+	end
 
-    Bar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            update(input)
-        end
-    end)
-    UIS.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
-            update(input)
-        end
-    end)
-    UIS.InputEnded:Connect(function(input)
-        dragging = false
-    end)
+	Bar.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = true
+			Main.Active = false
+			update(input)
+		end
+	end)
+
+	UIS.InputChanged:Connect(function(input)
+		if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+			update(input)
+		end
+	end)
+
+	UIS.InputEnded:Connect(function(input)
+		if dragging then
+			dragging = false
+			Main.Active = true
+		end
+	end)
 end
 
-    Bar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            UIS.ModalEnabled = true -- trava câmera
-            update(input)
-        end
-    end)
-
-    UIS.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
-            update(input)
-        end
-    end)
-
-    UIS.InputEnded:Connect(function(input)
-        if dragging then
-            dragging = false
-            UIS.ModalEnabled = false -- libera câmera
-        end
-    end)
-
--- Slider funcional
 CreateSlider(Tabs["Misc"], "WallSpeed", 1, 100, 25, function(val)
-    local char = game.Players.LocalPlayer.Character
-    if char and char:FindFirstChild("Humanoid") then
-        char.Humanoid.WalkSpeed = val
-    end
+	local char = LocalPlayer.Character
+	if char and char:FindFirstChild("Humanoid") then
+		char.Humanoid.WalkSpeed = val
+	end
 end)
